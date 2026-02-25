@@ -1058,6 +1058,16 @@
           // Area guide responses only — not search results that mention "area" in passing
           chips.push({ label: "🔍 Search Here",   action: "Search for PGs here" });
           chips.push({ label: "💬 Tell me more",  action: "Tell me more about the area" });
+        } else if (!hasMulti && !hasOne && (
+          lower.includes('rent starts from') || lower.includes("here's what we have") ||
+          lower.includes('type: flat') || lower.includes('type: pg') ||
+          lower.includes('type: hostel') || lower.includes('type: co-living') ||
+          (lower.includes('₹') && lower.includes('/month') && lower.includes('📍')))) {
+          // Property detail view — show action chips
+          chips.push({ label: "📅 Book a Visit",  action: "Schedule a visit" });
+          chips.push({ label: "❤️ Shortlist",     action: "Shortlist this property" });
+          chips.push({ label: "🛏️ See Rooms",     action: "Show me room options and pricing" });
+          chips.push({ label: "⚖️ Compare",       action: "Compare the top 2 properties" });
         } else if (!hasMulti && !hasOne) {
           // Generic broker response — offer to search
           chips.push({ label: "🔍 Search PGs",    action: "Show me properties in Mumbai" });

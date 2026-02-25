@@ -577,6 +577,7 @@
 
     // ─── State ───
     let userId = localStorage.getItem("eazypg_user_id");
+    let _carouselSeq = 0;
     if (!userId) {
       userId = "uat_" + Math.random().toString(36).slice(2, 10);
       localStorage.setItem("eazypg_user_id", userId);
@@ -687,8 +688,7 @@
       bubble.className = "bubble";
       bubble.innerHTML =
         `<span class="agent-badge">${agentLabel} · ${timeNow()}</span>` +
-        renderRichMessage(text, agent) +
-        `<div class="time">${timeNow()}</div>`;
+        renderRichMessage(text, agent);
 
       // Wire data-action buttons (carousel + cta)
       bubble.querySelectorAll("[data-action]").forEach(btn => {
@@ -858,6 +858,7 @@
 
       const isSingle = properties.length === 1;
       const cardsHtml = properties.map(p => buildPropertyCardHtml(p, isSingle)).join('');
+      const cid = ++_carouselSeq;
 
       let carouselHtml;
       if (isSingle) {
@@ -865,8 +866,8 @@
       } else {
         carouselHtml = `
           <div class="carousel-wrapper">
-            <span class="carousel-counter" id="carouselCounter">1 / ${properties.length}</span>
-            <div class="property-carousel" id="propCarousel" data-total="${properties.length}">${cardsHtml}</div>
+            <span class="carousel-counter" id="cc${cid}">1 / ${properties.length}</span>
+            <div class="property-carousel" id="pc${cid}" data-total="${properties.length}">${cardsHtml}</div>
           </div>
           <span class="carousel-view-all" data-action="Show me all ${properties.length} properties">View all ${properties.length} →</span>
         `;
@@ -958,32 +959,6 @@
         }
       }
       return `<div class="msg-content">${html}</div>`;
-    }
-
-    // ─── Comparison Table → Scorecard (legacy, still used by renderWithCompareTable indirectly) ───
-    function replaceCompareTables(text) {
-      const lines = text.split('\n');
-      const result = [];
-      let tableLines = [];
-
-      for (let i = 0; i < lines.length; i++) {
-        if (/\|.*\|/.test(lines[i])) {
-          tableLines.push(lines[i]);
-        } else {
-          if (tableLines.length >= 3) {
-            result.push(buildCompareCardHtml(tableLines));
-            tableLines = [];
-          } else {
-            result.push(...tableLines);
-            tableLines = [];
-          }
-          result.push(lines[i]);
-        }
-      }
-      if (tableLines.length >= 3) result.push(buildCompareCardHtml(tableLines));
-      else if (tableLines.length) result.push(...tableLines);
-
-      return result.join('\n');
     }
 
     function buildCompareCardHtml(lines) {

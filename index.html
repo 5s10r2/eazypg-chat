@@ -838,20 +838,21 @@
       // Text before first property block
       const preText = text.slice(0, matches[0].index).trim();
 
-      // Find post-carousel text by locating the closing separator (--- or ***) after
-      // the property section, or the first double newline after the last property block
-      const propsStart = matches[0].index;
-      const fromFirst  = text.slice(propsStart);
-      const closeSepM  = fromFirst.match(/\n[-*]{3,}\s*(?:\n|$)/);
+      // Find post-carousel text by locating the closing separator (--- or ***) AFTER
+      // the last property block. Searching from matches[0] was wrong — it found the
+      // separator *between* properties instead of after all of them.
+      const lastMatchStart = matches[matches.length - 1].index;
+      const fromLast       = text.slice(lastMatchStart);
+      const closeSepM      = fromLast.match(/\n[-*]{3,}\s*(?:\n|$)/);
       let postText = "";
       if (closeSepM) {
-        const postStart = propsStart + closeSepM.index + closeSepM[0].length;
+        const postStart = lastMatchStart + closeSepM.index + closeSepM[0].length;
         postText = text.slice(postStart).trim();
       } else {
         // No separator — fall back to first double newline after the last property header
-        const afterLast = text.slice(matches[matches.length - 1].index);
-        const doubleNl  = afterLast.match(/\n\n(?!\s*(?:📍|💰|👥|🏷))/);
-        postText = doubleNl ? afterLast.slice(doubleNl.index).trim() : "";
+        // that is NOT followed by a property-line emoji (📍 💰 👥 🏷) or another H3
+        const doubleNl = fromLast.match(/\n\n(?!\s*(?:📍|💰|👥|🏷|#{1,3}))/);
+        postText = doubleNl ? fromLast.slice(doubleNl.index).trim() : "";
       }
       postText = postText.replace(/^(?:Image|Link|Match|Distance|For|Type):.*$/gim, '').replace(/\n{3,}/g, '\n\n').trim();
 

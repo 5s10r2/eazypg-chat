@@ -764,6 +764,26 @@
         return renderPropertyCarousel(text, enriched, true);
       }
 
+      // 3c. Detect keycap-number H3 format: ### 1️⃣ Name  ### 2️⃣ Name
+      // Keycap sequence: digit + \ufe0f (variation selector) + \u20e3 (combining enclosing keycap)
+      const h3KeycapPattern = /^#{1,3}\s+(\d)\ufe0f\u20e3\s+(.+)$/gm;
+      const h3KeycapMatches = [...text.matchAll(h3KeycapPattern)];
+      if (h3KeycapMatches.length >= 1) {
+        const enriched = h3KeycapMatches.map((m, i) => {
+          const blockStart = m.index;
+          const nextMatch  = h3KeycapMatches[i + 1];
+          const blockEnd   = nextMatch ? nextMatch.index : text.length;
+          const block      = text.slice(blockStart, blockEnd);
+          const priceLine = block.match(/💰[^\n]*(₹[\d,]+)/) ||
+                            block.match(/[Rr]ent[^\n]*(₹[\d,]+)/);
+          const rentFall  = block.match(/₹[\d,]{4,}(?:\/month|\/mo)?/);
+          const rentVal   = priceLine ? priceLine[1] : (rentFall ? rentFall[0] : "");
+          const locM      = block.match(/📍\s*([^\n]+)/);
+          return Object.assign(m, { 3: rentVal, _location: locM ? locM[1] : "" });
+        });
+        return renderPropertyCarousel(text, enriched, true);
+      }
+
       // 4. Default markdown
       let html = marked.parse(text);
       html = html.replace(/(₹[\d,]+(?:\s*(?:\/\s*(?:month|mo|day))|(?:\s*per\s*(?:month|day)))?)/g,
@@ -1022,8 +1042,11 @@
       if (agent === "broker") {
         // Detect H3-style headers (old agent format: ### 🏠 1. Name or ### 1. Name)
         // [^\d\n]* allows for optional emoji/text before the number
-        const hasMultiH3 = /^#{1,3}\s+[^\d\n]*[23456789]\.\s/m.test(text);
-        const hasOneH3   = /^#{1,3}\s+[^\d\n]*1\.\s/m.test(text);
+        // Also detect keycap format: ### 1️⃣ Name (digit + \ufe0f\u20e3, no period)
+        const hasMultiH3 = /^#{1,3}\s+[^\d\n]*[23456789]\.\s/m.test(text) ||
+                           /^#{1,3}\s+[2-9]\ufe0f\u20e3/m.test(text);
+        const hasOneH3   = /^#{1,3}\s+[^\d\n]*1\.\s/m.test(text) ||
+                           /^#{1,3}\s+1\ufe0f\u20e3/m.test(text);
         // Detect new compact format: **1. Name** / **2. Name**
         const hasMultiBold = /\*\*[23456789]\.\s/.test(text);
         const hasOneBold   = /\*\*1\.\s/.test(text);

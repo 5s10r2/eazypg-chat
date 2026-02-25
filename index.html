@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>EazyPG — Find Your Perfect PG</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='28' font-size='28'>🏠</text></svg>" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <style>
+    /* ─── Reset & Variables ─── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #f0f2f5;
+      --chat-bg: #efeae2;
+      --header-bg: #075e54;
+      --header-dark: #054d44;
+      --accent: #25d366;
+      --accent-hover: #1da851;
+      --user-bubble: #d9fdd3;
+      --bot-bubble: #ffffff;
+      --text: #111b21;
+      --text-light: #667781;
+      --text-lighter: #8696a0;
+      --shadow: 0 1px 3px rgba(0,0,0,.08);
+      --shadow-md: 0 4px 12px rgba(0,0,0,.1);
+      --radius: 12px;
+      --radius-sm: 8px;
+      --font: 'Inter', -apple-system, system-ui, sans-serif;
+      --card-accent: #075e54;
+      --card-price: #075e54;
+      --card-bg: linear-gradient(135deg, #f8fffe 0%, #f0faf7 100%);
+      --cta-bg: #075e54;
+      --cta-hover: #054d44;
+    }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ─── Header ─── */
+    .header {
+      background: var(--header-bg);
+      color: #fff;
+      padding: 0 20px;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-shrink: 0;
+      box-shadow: 0 2px 8px rgba(0,0,0,.15);
+      z-index: 10;
+    }
+    .header-avatar {
+      width: 42px; height: 42px;
+      background: rgba(255,255,255,.15);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px;
+      flex-shrink: 0;
+    }
+    .header-info { flex: 1; }
+    .header-name { font-weight: 600; font-size: 16px; letter-spacing: -0.01em; }
+    .header-status {
+      font-size: 12px;
+      opacity: .85;
+      display: flex; align-items: center; gap: 5px;
+    }
+    .header-status .dot {
+      width: 7px; height: 7px;
+      background: var(--accent);
+      border-radius: 50%;
+      display: inline-block;
+    }
+    .header-badge {
+      background: rgba(255,255,255,.12);
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+    }
+
+    /* ─── Chat Area ─── */
+    .chat-area {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 16px 8px;
+      background: var(--chat-bg);
+      background-image:
+        url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='0.02'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+      scroll-behavior: smooth;
+    }
+
+    .chat-area::-webkit-scrollbar { width: 6px; }
+    .chat-area::-webkit-scrollbar-thumb {
+      background: rgba(0,0,0,.15);
+      border-radius: 3px;
+    }
+
+    /* ─── Message Rows ─── */
+    .msg-row {
+      display: flex;
+      margin-bottom: 4px;
+      animation: msgIn .3s ease;
+    }
+    .msg-row.user { justify-content: flex-end; }
+    .msg-row.bot { justify-content: flex-start; }
+
+    @keyframes msgIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ─── Bubbles ─── */
+    .bubble {
+      max-width: min(520px, 85%);
+      padding: 8px 12px;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      position: relative;
+      line-height: 1.55;
+      font-size: 14.5px;
+      word-wrap: break-word;
+    }
+    .user .bubble {
+      background: var(--user-bubble);
+      border-bottom-right-radius: 4px;
+    }
+    .bot .bubble {
+      background: var(--bot-bubble);
+      border-bottom-left-radius: 4px;
+    }
+
+    .bubble .time {
+      font-size: 11px;
+      color: var(--text-lighter);
+      text-align: right;
+      margin-top: 4px;
+    }
+
+    /* ─── Markdown inside bot bubbles ─── */
+    .bot .bubble p { margin: 0 0 8px; }
+    .bot .bubble p:last-child { margin-bottom: 0; }
+    .bot .bubble strong { color: var(--header-bg); font-weight: 600; }
+    .bot .bubble em { color: var(--text-light); }
+    .bot .bubble ul, .bot .bubble ol {
+      padding-left: 18px;
+      margin: 6px 0;
+    }
+    .bot .bubble li { margin: 3px 0; }
+    .bot .bubble li::marker { color: var(--accent); }
+    .bot .bubble a {
+      color: var(--header-bg);
+      text-decoration: underline;
+      text-decoration-color: rgba(7,94,84,.3);
+    }
+    .bot .bubble hr {
+      border: none;
+      border-top: 1px solid #e5e5e5;
+      margin: 10px 0;
+    }
+
+    /* ─── Property Cards (generative UI) ─── */
+    .property-card {
+      background: var(--card-bg);
+      border: 1px solid #d4ede6;
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      margin: 10px 0;
+      position: relative;
+      overflow: hidden;
+      transition: box-shadow .2s;
+    }
+    .property-card:hover {
+      box-shadow: var(--shadow-md);
+    }
+    .property-card::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 4px;
+      background: var(--card-accent);
+      border-radius: 4px 0 0 4px;
+    }
+    .property-card-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+    .property-card-name {
+      font-weight: 600;
+      font-size: 15px;
+      color: var(--header-bg);
+      line-height: 1.3;
+    }
+    .property-card-number {
+      background: var(--header-bg);
+      color: #fff;
+      width: 24px; height: 24px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .property-card-price {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: var(--card-price);
+      color: #fff;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    .property-card-details {
+      font-size: 13.5px;
+      color: var(--text);
+      line-height: 1.5;
+    }
+    .property-card-details ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .property-card-details li {
+      padding: 2px 0;
+      display: flex;
+      align-items: flex-start;
+      gap: 6px;
+    }
+    .property-card-details li::before {
+      content: '✓';
+      color: var(--accent);
+      font-weight: 700;
+      font-size: 12px;
+      margin-top: 2px;
+      flex-shrink: 0;
+    }
+
+    /* ─── Amenity Chips ─── */
+    .amenity-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-top: 8px;
+    }
+    .amenity-chip {
+      background: #e8f5f1;
+      color: var(--header-bg);
+      padding: 3px 9px;
+      border-radius: 12px;
+      font-size: 11.5px;
+      font-weight: 500;
+    }
+
+    /* ─── CTA Buttons (generative UI) ─── */
+    .cta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .cta-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--cta-bg);
+      color: #fff;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all .2s;
+      font-family: var(--font);
+    }
+    .cta-btn:hover { background: var(--cta-hover); transform: translateY(-1px); box-shadow: var(--shadow-md); }
+    .cta-btn.secondary {
+      background: transparent;
+      color: var(--header-bg);
+      border: 1.5px solid var(--header-bg);
+    }
+    .cta-btn.secondary:hover {
+      background: rgba(7,94,84,.06);
+    }
+
+    /* ─── Comparison Table (generative UI) ─── */
+    .compare-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      margin: 10px 0;
+      font-size: 13px;
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      border: 1px solid #d4ede6;
+    }
+    .compare-table th {
+      background: var(--header-bg);
+      color: #fff;
+      padding: 8px 12px;
+      text-align: left;
+      font-weight: 600;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+    .compare-table td {
+      padding: 8px 12px;
+      border-bottom: 1px solid #eee;
+    }
+    .compare-table tr:last-child td { border-bottom: none; }
+    .compare-table tr:nth-child(even) { background: #f8fffe; }
+
+    /* ─── Area Info Card (generative UI) ─── */
+    .area-card {
+      background: linear-gradient(135deg, #075e54 0%, #0a7e6d 100%);
+      color: #fff;
+      border-radius: var(--radius);
+      padding: 16px;
+      margin: 10px 0;
+    }
+    .area-card-title {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .area-card-body {
+      font-size: 13.5px;
+      line-height: 1.55;
+      opacity: .95;
+    }
+    .area-card-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 10px;
+    }
+    .area-card-tag {
+      background: rgba(255,255,255,.18);
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-size: 11.5px;
+      font-weight: 500;
+    }
+
+    /* ─── Price Highlight ─── */
+    .price-highlight {
+      display: inline-flex;
+      align-items: center;
+      background: #e8f5f1;
+      color: var(--header-bg);
+      padding: 1px 7px;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    /* ─── Typing Indicator ─── */
+    .typing-row { display: flex; margin-bottom: 4px; }
+    .typing-bubble {
+      background: var(--bot-bubble);
+      border-radius: var(--radius);
+      border-bottom-left-radius: 4px;
+      padding: 14px 18px;
+      box-shadow: var(--shadow);
+      display: flex;
+      gap: 5px;
+      align-items: center;
+    }
+    .typing-dot {
+      width: 8px; height: 8px;
+      background: #90a4ae;
+      border-radius: 50%;
+      animation: typeBounce 1.4s infinite;
+    }
+    .typing-dot:nth-child(2) { animation-delay: .15s; }
+    .typing-dot:nth-child(3) { animation-delay: .3s; }
+    @keyframes typeBounce {
+      0%, 60%, 100% { transform: translateY(0); }
+      30% { transform: translateY(-6px); }
+    }
+
+    /* ─── Welcome Card ─── */
+    .welcome-card {
+      text-align: center;
+      padding: 32px 24px;
+      margin: 20px auto;
+      max-width: 380px;
+    }
+    .welcome-icon { font-size: 48px; margin-bottom: 12px; }
+    .welcome-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--header-bg);
+      margin-bottom: 6px;
+    }
+    .welcome-subtitle {
+      font-size: 14px;
+      color: var(--text-light);
+      line-height: 1.5;
+      margin-bottom: 20px;
+    }
+    .quick-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+    }
+    .quick-action {
+      background: #fff;
+      border: 1.5px solid #d4ede6;
+      border-radius: 20px;
+      padding: 8px 16px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--header-bg);
+      cursor: pointer;
+      transition: all .2s;
+      font-family: var(--font);
+    }
+    .quick-action:hover {
+      background: #e8f5f1;
+      border-color: var(--header-bg);
+      transform: translateY(-1px);
+    }
+
+    /* ─── Input Area ─── */
+    .input-area {
+      background: #f0f2f5;
+      padding: 10px 12px;
+      display: flex;
+      align-items: flex-end;
+      gap: 10px;
+      flex-shrink: 0;
+      border-top: 1px solid #e5e5e5;
+    }
+    .input-wrapper {
+      flex: 1;
+      background: #fff;
+      border-radius: 24px;
+      display: flex;
+      align-items: flex-end;
+      padding: 6px 16px;
+      box-shadow: var(--shadow);
+      min-height: 44px;
+    }
+    .input-wrapper textarea {
+      flex: 1;
+      border: none;
+      outline: none;
+      resize: none;
+      font-family: var(--font);
+      font-size: 15px;
+      line-height: 1.4;
+      max-height: 120px;
+      padding: 6px 0;
+      background: transparent;
+      color: var(--text);
+    }
+    .input-wrapper textarea::placeholder { color: var(--text-lighter); }
+    .send-btn {
+      width: 44px; height: 44px;
+      border-radius: 50%;
+      background: var(--header-bg);
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: all .2s;
+    }
+    .send-btn:hover { background: var(--header-dark); transform: scale(1.05); }
+    .send-btn:disabled { background: #b0bec5; cursor: not-allowed; transform: none; }
+    .send-btn svg { width: 20px; height: 20px; fill: #fff; }
+
+    /* ─── Cold Start Banner ─── */
+    .cold-banner {
+      background: #fff3e0;
+      color: #e65100;
+      text-align: center;
+      padding: 8px 16px;
+      font-size: 12.5px;
+      font-weight: 500;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .cold-banner.show { display: flex; }
+    .cold-spinner {
+      width: 14px; height: 14px;
+      border: 2px solid #e65100;
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin .8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ─── Agent Badge ─── */
+    .agent-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 10.5px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--text-lighter);
+      margin-bottom: 4px;
+    }
+    .agent-badge .agent-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+    }
+
+    /* ─── Responsive ─── */
+    @media (min-width: 768px) {
+      body {
+        max-width: 480px;
+        margin: 0 auto;
+        border-left: 1px solid #ddd;
+        border-right: 1px solid #ddd;
+      }
+    }
+    @media (max-width: 360px) {
+      .bubble { max-width: 92%; font-size: 14px; }
+      .property-card { padding: 10px 12px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-avatar">🏠</div>
+    <div class="header-info">
+      <div class="header-name">EazyPG</div>
+      <div class="header-status"><span class="dot"></span> Online — Your PG assistant</div>
+    </div>
+    <div class="header-badge">UAT</div>
+  </div>
+
+  <!-- Cold Start Banner -->
+  <div class="cold-banner" id="coldBanner">
+    <div class="cold-spinner"></div>
+    <span>Waking up the server… first response may take up to a minute</span>
+  </div>
+
+  <!-- Chat Area -->
+  <div class="chat-area" id="chatArea">
+    <div class="welcome-card" id="welcomeCard">
+      <div class="welcome-icon">🏠</div>
+      <div class="welcome-title">Welcome to EazyPG!</div>
+      <div class="welcome-subtitle">
+        I'm your AI PG broker. I'll help you find, compare, and book the perfect PG in Mumbai. Try one of these:
+      </div>
+      <div class="quick-actions">
+        <button class="quick-action" onclick="sendQuick('Show me PGs in Andheri')">🔍 PGs in Andheri</button>
+        <button class="quick-action" onclick="sendQuick('I need a PG near Powai under 12000')">💰 Budget PGs</button>
+        <button class="quick-action" onclick="sendQuick('What areas in Mumbai are good for working professionals?')">📍 Area Guide</button>
+        <button class="quick-action" onclick="sendQuick('I work at BKC, find me a PG nearby')">🏢 Near Office</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Input Area -->
+  <div class="input-area">
+    <div class="input-wrapper">
+      <textarea id="msgInput" rows="1" placeholder="Type your message…"
+        onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage()}"
+        oninput="autoGrow(this)"></textarea>
+    </div>
+    <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+      <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+    </button>
+  </div>
+
+  <script>
+    // ─── Config ───
+    const ACCOUNT_VALUES = {
+      account_name: "EazyPG",
+      account_phone: "918888888888",
+      account_city: "Mumbai",
+      pg_ids: []
+    };
+
+    // ─── State ───
+    let userId = localStorage.getItem("eazypg_user_id");
+    if (!userId) {
+      userId = "uat_" + Math.random().toString(36).slice(2, 10);
+      localStorage.setItem("eazypg_user_id", userId);
+    }
+    let isWaiting = false;
+    let firstRequest = true;
+
+    const chatArea = document.getElementById("chatArea");
+    const msgInput = document.getElementById("msgInput");
+    const sendBtn  = document.getElementById("sendBtn");
+
+    // ─── Markdown Config ───
+    marked.setOptions({
+      breaks: true,
+      gfm: true,
+      headerIds: false,
+      mangle: false
+    });
+
+    // ─── Auto-grow Textarea ───
+    function autoGrow(el) {
+      el.style.height = "auto";
+      el.style.height = Math.min(el.scrollHeight, 120) + "px";
+    }
+
+    // ─── Quick Action ───
+    function sendQuick(text) {
+      msgInput.value = text;
+      sendMessage();
+    }
+
+    // ─── Send Message ───
+    async function sendMessage() {
+      const text = msgInput.value.trim();
+      if (!text || isWaiting) return;
+
+      // Hide welcome card
+      const wc = document.getElementById("welcomeCard");
+      if (wc) wc.style.display = "none";
+
+      // Add user bubble
+      addMessage(text, "user");
+      msgInput.value = "";
+      msgInput.style.height = "auto";
+
+      // Show typing indicator
+      isWaiting = true;
+      sendBtn.disabled = true;
+      const typingEl = showTyping();
+
+      // Show cold start warning on first request
+      if (firstRequest) {
+        document.getElementById("coldBanner").classList.add("show");
+        firstRequest = false;
+      }
+
+      const startTime = Date.now();
+
+      try {
+        const res = await fetch("/api/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            user_id: userId,
+            message: text,
+            account_values: ACCOUNT_VALUES
+          })
+        });
+
+        if (!res.ok) throw new Error(`Server error: ${res.status}`);
+        const data = await res.json();
+
+        // Remove typing + cold banner
+        typingEl.remove();
+        document.getElementById("coldBanner").classList.remove("show");
+
+        // Add bot message with rich rendering
+        addBotMessage(data.response, data.agent);
+
+      } catch (err) {
+        typingEl.remove();
+        document.getElementById("coldBanner").classList.remove("show");
+        addBotMessage("Sorry, something went wrong. Please try again in a moment. 🙏", "system");
+        console.error(err);
+      } finally {
+        isWaiting = false;
+        sendBtn.disabled = false;
+        msgInput.focus();
+      }
+    }
+
+    // ─── Add user message ───
+    function addMessage(text, type) {
+      const row = document.createElement("div");
+      row.className = `msg-row ${type}`;
+
+      const bubble = document.createElement("div");
+      bubble.className = "bubble";
+      bubble.innerHTML = `<div>${escapeHtml(text)}</div><div class="time">${timeNow()}</div>`;
+
+      row.appendChild(bubble);
+      chatArea.appendChild(row);
+      scrollToBottom();
+    }
+
+    // ─── Add bot message with generative UI ───
+    function addBotMessage(text, agent) {
+      const row = document.createElement("div");
+      row.className = "msg-row bot";
+
+      const bubble = document.createElement("div");
+      bubble.className = "bubble";
+
+      // Agent badge
+      const agentName = agent === "broker" ? "🏠 Broker Agent" :
+                        agent === "booking" ? "📅 Booking Agent" :
+                        agent === "profile" ? "👤 Profile Agent" :
+                        agent === "room" ? "🛏️ Room Agent" : "💬 Assistant";
+
+      const badgeHtml = `<div class="agent-badge"><span class="agent-dot"></span>${agentName}</div>`;
+
+      // Render with generative UI
+      const richHtml = renderRichMessage(text);
+
+      bubble.innerHTML = `${badgeHtml}${richHtml}<div class="time">${timeNow()}</div>`;
+
+      // Wire up CTA buttons
+      bubble.querySelectorAll(".cta-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const action = btn.dataset.action;
+          if (action) {
+            msgInput.value = action;
+            sendMessage();
+          }
+        });
+      });
+
+      row.appendChild(bubble);
+      chatArea.appendChild(row);
+      scrollToBottom();
+    }
+
+    // ─── Generative UI: Rich Message Renderer ───
+    function renderRichMessage(text) {
+      // Detect property listings and render as cards
+      const propertyCardPattern = /\*\*(\d+)\.\s*(.+?)\*\*\s*[—–-]\s*(₹[\d,]+(?:\/\s*month|\s*per\s*month|\/mo)?)/g;
+      let hasPropertyCards = false;
+      let processedText = text;
+
+      // Check if response has property listings
+      const matches = [...text.matchAll(propertyCardPattern)];
+      if (matches.length >= 1) {
+        hasPropertyCards = true;
+        processedText = renderPropertyCards(text, matches);
+      }
+
+      if (!hasPropertyCards) {
+        // Check for other special patterns
+        processedText = enhanceMarkdown(text);
+      }
+
+      // Parse markdown
+      let html = marked.parse(processedText);
+
+      // Post-process: highlight prices
+      html = html.replace(/(₹[\d,]+(?:\s*(?:\/\s*(?:month|mo|day|night|bed))|(?:\s*per\s*(?:month|day|night|bed)))?)/g,
+        '<span class="price-highlight">$1</span>');
+
+      // Detect and add CTA buttons
+      const ctaHtml = detectCTAs(text);
+      if (ctaHtml) {
+        html += ctaHtml;
+      }
+
+      return `<div class="msg-content">${html}</div>`;
+    }
+
+    // ─── Render Property Cards ───
+    function renderPropertyCards(text, matches) {
+      let result = text;
+
+      // Process each property match in reverse to not mess up indices
+      for (let i = matches.length - 1; i >= 0; i--) {
+        const match = matches[i];
+        const num = match[1];
+        const name = match[2].trim();
+        const price = match[3].trim();
+
+        // Find the full property block (from this match to next match or end)
+        const startIdx = match.index;
+        const nextMatch = i < matches.length - 1 ? matches[i + 1] : null;
+        const endIdx = nextMatch ? nextMatch.index : findPropertyBlockEnd(text, startIdx + match[0].length);
+
+        const blockText = text.slice(startIdx + match[0].length, endIdx).trim();
+
+        // Parse amenities from the block
+        const amenityLines = blockText.split('\n')
+          .map(l => l.replace(/^[-•*]\s*/, '').trim())
+          .filter(l => l.length > 0 && l.length < 100);
+
+        // Build property card HTML (will be passed through marked)
+        const cardHtml = buildPropertyCardHtml(num, name, price, amenityLines);
+
+        result = result.slice(0, startIdx) + '\n' + cardHtml + '\n' + result.slice(endIdx);
+      }
+
+      return result;
+    }
+
+    function findPropertyBlockEnd(text, fromIdx) {
+      // Find end of property block: next blank line followed by non-list content, or end
+      const remaining = text.slice(fromIdx);
+      const lines = remaining.split('\n');
+      let endOffset = 0;
+
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+        endOffset += lines[i].length + 1;
+
+        // Stop at next numbered property or double newline after content
+        if (i > 0 && /^\*\*\d+\./.test(line)) {
+          endOffset -= lines[i].length + 1;
+          break;
+        }
+      }
+
+      return fromIdx + endOffset;
+    }
+
+    function buildPropertyCardHtml(num, name, price, details) {
+      const detailsHtml = details.map(d =>
+        `<li>${escapeHtml(d)}</li>`
+      ).join('');
+
+      // Extract amenity keywords for chips
+      const amenityKeywords = ['WiFi', 'AC', 'Meals', 'Laundry', 'Gym', 'Furnished',
+        'Power Backup', 'Security', 'Parking', 'TV', 'Fridge', 'Geyser',
+        'CCTV', 'Housekeeping', 'Kitchen'];
+      const foundAmenities = [];
+      const allText = details.join(' ');
+      amenityKeywords.forEach(kw => {
+        if (allText.toLowerCase().includes(kw.toLowerCase())) {
+          foundAmenities.push(kw);
+        }
+      });
+
+      const chipsHtml = foundAmenities.length > 0 ?
+        `<div class="amenity-chips">${foundAmenities.map(a =>
+          `<span class="amenity-chip">${a}</span>`).join('')}</div>` : '';
+
+      return `<div class="property-card">
+        <div class="property-card-header">
+          <div class="property-card-name">${escapeHtml(name)}</div>
+          <div class="property-card-number">${num}</div>
+        </div>
+        <div class="property-card-price">💰 ${escapeHtml(price)}</div>
+        <div class="property-card-details">
+          <ul>${detailsHtml}</ul>
+        </div>
+        ${chipsHtml}
+      </div>`;
+    }
+
+    // ─── Enhance Markdown ───
+    function enhanceMarkdown(text) {
+      return text;
+    }
+
+    // ─── Detect CTAs ───
+    function detectCTAs(text) {
+      const lower = text.toLowerCase();
+      const ctaButtons = [];
+
+      // Detect common CTAs in bot responses
+      if (lower.includes('visit') || lower.includes('schedule')) {
+        ctaButtons.push({ label: '📅 Schedule a Visit', action: 'I want to schedule a visit', primary: true });
+      }
+      if (lower.includes('shortlist') && !lower.includes('shortlisted')) {
+        ctaButtons.push({ label: '⭐ Shortlist', action: 'Shortlist this property', primary: false });
+      }
+      if (lower.includes('compare') || lower.includes('comparison')) {
+        ctaButtons.push({ label: '⚖️ Compare Properties', action: 'Compare these properties', primary: false });
+      }
+      if ((lower.includes('more') && lower.includes('detail')) || lower.includes('tell me more')) {
+        ctaButtons.push({ label: '📋 More Details', action: 'Tell me more about the first property', primary: false });
+      }
+      if (lower.includes('show more') || lower.includes('more option')) {
+        ctaButtons.push({ label: '➕ Show More', action: 'Show more options', primary: false });
+      }
+
+      // Only show CTAs if we found relevant ones (max 3)
+      if (ctaButtons.length === 0) return '';
+
+      const btns = ctaButtons.slice(0, 3).map(btn =>
+        `<button class="cta-btn ${btn.primary ? '' : 'secondary'}" data-action="${escapeAttr(btn.action)}">${btn.label}</button>`
+      ).join('');
+
+      return `<div class="cta-row">${btns}</div>`;
+    }
+
+    // ─── Typing Indicator ───
+    function showTyping() {
+      const row = document.createElement("div");
+      row.className = "typing-row";
+      row.innerHTML = `<div class="typing-bubble">
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+      </div>`;
+      chatArea.appendChild(row);
+      scrollToBottom();
+      return row;
+    }
+
+    // ─── Helpers ───
+    function escapeHtml(s) {
+      const div = document.createElement("div");
+      div.textContent = s;
+      return div.innerHTML;
+    }
+    function escapeAttr(s) {
+      return s.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+    function timeNow() {
+      return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+    function scrollToBottom() {
+      requestAnimationFrame(() => {
+        chatArea.scrollTop = chatArea.scrollHeight;
+      });
+    }
+
+    // ─── Focus input on load ───
+    window.addEventListener("load", () => msgInput.focus());
+  </script>
+</body>
+</html>

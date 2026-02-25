@@ -732,11 +732,29 @@
         return renderPropertyCarousel(text, compactMatches, false);
       }
 
-      // 3. Detect legacy property format: **N. Name** — ₹X
+      // 3. Detect legacy bold property format: **N. Name** — ₹X
       const legacyPattern = /\*\*(\d+)\.\s*(.+?)\*\*\s*[—–-]\s*(₹[\d,]+(?:\/\s*(?:month|mo))?)/g;
       const legacyMatches = [...text.matchAll(legacyPattern)];
       if (legacyMatches.length >= 1) {
         return renderPropertyCarousel(text, legacyMatches, true);
+      }
+
+      // 3b. Detect old H3-header property format: ### N. 🏠 Name\n📍 location\n₹X
+      const h3Pattern = /^#{1,3}\s+(\d+)\.\s+(?:🏠\s*)?(.+)$/gm;
+      const h3Matches = [...text.matchAll(h3Pattern)];
+      if (h3Matches.length >= 1) {
+        // Extract rent from the block following each H3 header
+        const enriched = h3Matches.map((m, i) => {
+          const blockStart = m.index;
+          const nextMatch  = h3Matches[i + 1];
+          const blockEnd   = nextMatch ? nextMatch.index : text.length;
+          const block      = text.slice(blockStart, blockEnd);
+          const rentM      = block.match(/₹[\d,]+(?:\/month|\/mo)?/);
+          const locM       = block.match(/📍\s*([^\n]+)/);
+          // Synthetic match object compatible with legacy renderer
+          return Object.assign(m, { 3: rentM ? rentM[0] : "", _location: locM ? locM[1] : "" });
+        });
+        return renderPropertyCarousel(text, enriched, true);
       }
 
       // 4. Default markdown
@@ -938,12 +956,23 @@
       const chips = [];
 
       if (agent === "broker") {
-        const hasMulti = /\*\*[23456789]\.\s/.test(text);          // 2+ properties
-        const hasOne   = /\*\*1\.\s/.test(text) && !hasMulti;      // exactly 1 property
-        const isQual   = (lower.includes('budget') || lower.includes('boys') ||
-                          lower.includes('girls') || lower.includes('wifi') ||
-                          lower.includes('must-have') || lower.includes('andheri has') ||
-                          lower.includes('has some great') || lower.includes('quick —'));
+        // Detect H3-style headers (old agent format: ### 1. Name)
+        const hasMultiH3 = /^#{1,3}\s+[23456789]\.\s/m.test(text);
+        const hasOneH3   = /^#{1,3}\s+1\.\s/m.test(text);
+        // Detect new compact format: **1. Name** / **2. Name**
+        const hasMultiBold = /\*\*[23456789]\.\s/.test(text);
+        const hasOneBold   = /\*\*1\.\s/.test(text);
+
+        const hasMulti = hasMultiBold || hasMultiH3;
+        const hasOne   = (hasOneBold || hasOneH3) && !hasMulti;
+
+        // isQual: ONLY true when the actual qualifying question is shown
+        // Uses specific question phrases, NOT broad terms like "budget" or "boys"
+        const isQual = lower.includes('quick —') || lower.includes('quick—') ||
+                       lower.includes('must-haves from') ||
+                       lower.includes('has some great options') ||
+                       lower.includes('just share what matters') ||
+                       (lower.includes('boys') && lower.includes('girls') && lower.includes('monthly budget'));
 
         if (isQual) {
           // Qualifying question shown — no chips, let user type freely

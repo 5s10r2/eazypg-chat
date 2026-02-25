@@ -739,8 +739,9 @@
         return renderPropertyCarousel(text, legacyMatches, true);
       }
 
-      // 3b. Detect old H3-header property format: ### N. 🏠 Name\n📍 location\n₹X
-      const h3Pattern = /^#{1,3}\s+(\d+)\.\s+(?:🏠\s*)?(.+)$/gm;
+      // 3b. Detect old H3-header property format: ### 🏠 N. Name or ### N. Name
+      // [^\d\n]* handles optional emoji before the number (e.g. "### 🏠 1. Name")
+      const h3Pattern = /^#{1,3}\s+[^\d\n]*(\d+)\.\s+(.+)$/gm;
       const h3Matches = [...text.matchAll(h3Pattern)];
       if (h3Matches.length >= 1) {
         // Extract rent from the block following each H3 header
@@ -956,9 +957,10 @@
       const chips = [];
 
       if (agent === "broker") {
-        // Detect H3-style headers (old agent format: ### 1. Name)
-        const hasMultiH3 = /^#{1,3}\s+[23456789]\.\s/m.test(text);
-        const hasOneH3   = /^#{1,3}\s+1\.\s/m.test(text);
+        // Detect H3-style headers (old agent format: ### 🏠 1. Name or ### 1. Name)
+        // [^\d\n]* allows for optional emoji/text before the number
+        const hasMultiH3 = /^#{1,3}\s+[^\d\n]*[23456789]\.\s/m.test(text);
+        const hasOneH3   = /^#{1,3}\s+[^\d\n]*1\.\s/m.test(text);
         // Detect new compact format: **1. Name** / **2. Name**
         const hasMultiBold = /\*\*[23456789]\.\s/.test(text);
         const hasOneBold   = /\*\*1\.\s/.test(text);
@@ -989,9 +991,15 @@
         } else if (lower.includes('shortlist') || lower.includes('saved')) {
           chips.push({ label: "🔍 Search",        action: "Show me properties in Mumbai" });
           chips.push({ label: "📅 Book a Visit",  action: "Schedule a visit" });
-        } else if (lower.includes('area') || lower.includes('neighborhood') || lower.includes('from what i know')) {
+        } else if (!hasMulti && !hasOne && (lower.includes('neighborhood') || lower.includes('from what i know') ||
+                   (lower.includes('area') && lower.includes('search')))) {
+          // Area guide responses only — not search results that mention "area" in passing
           chips.push({ label: "🔍 Search Here",   action: "Search for PGs here" });
           chips.push({ label: "💬 Tell me more",  action: "Tell me more about the area" });
+        } else if (!hasMulti && !hasOne) {
+          // Generic broker response — offer to search
+          chips.push({ label: "🔍 Search PGs",    action: "Show me properties in Mumbai" });
+          chips.push({ label: "💬 Different Area", action: "Search in a different area" });
         }
       } else if (agent === "booking") {
         if (lower.includes('confirmed') || lower.includes('scheduled') || lower.includes('booked')) {

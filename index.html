@@ -827,7 +827,8 @@
         }
 
         // Extract image/link from the full block text
-        const imgM  = block.match(/Image:\s*(https?:\/\/\S+)/i);
+        // Matches both "Image: https://..." and markdown "![alt](https://...)" formats
+        const imgM  = block.match(/(?:Image:\s*|!\[[^\]]*\]\()(https?:\/\/[^\s)]+)/i);
         const linkM = block.match(/Link:\s*(https?:\/\/\S+)/i);
         const image = imgM  ? imgM[1]  : "";
         const link  = linkM ? linkM[1] : "";

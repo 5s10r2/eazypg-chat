@@ -3,36 +3,32 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>EazyPG — Find Your Perfect PG</title>
+  <title>OxOtel — Find Your Perfect PG</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='28' font-size='28'>🏠</text></svg>" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <style>
     /* ─── Reset & Variables ─── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --bg: #f0f2f5;
-      --chat-bg: #efeae2;
-      --header-bg: #075e54;
-      --header-dark: #054d44;
-      --accent: #25d366;
-      --accent-hover: #1da851;
-      --user-bubble: #d9fdd3;
-      --bot-bubble: #ffffff;
-      --text: #111b21;
-      --text-light: #667781;
-      --text-lighter: #8696a0;
-      --shadow: 0 1px 3px rgba(0,0,0,.08);
-      --shadow-md: 0 4px 12px rgba(0,0,0,.1);
-      --radius: 12px;
-      --radius-sm: 8px;
-      --font: 'Inter', -apple-system, system-ui, sans-serif;
-      --card-accent: #075e54;
-      --card-price: #075e54;
-      --card-bg: linear-gradient(135deg, #f8fffe 0%, #f0faf7 100%);
-      --cta-bg: #075e54;
-      --cta-hover: #054d44;
+      --bg:           #f8fafc;
+      --chat-bg:      #f1f5f9;
+      --header-bg:    #0a0a0a;
+      --accent:       #0070f3;
+      --user-bubble:  #0f172a;
+      --user-text:    #f8fafc;
+      --bot-bubble:   #ffffff;
+      --border:       #e2e8f0;
+      --text:         #0f172a;
+      --text-light:   #64748b;
+      --text-lighter: #94a3b8;
+      --cta-dark:     #0f172a;
+      --cta-ghost-bg: #ffffff;
+      --radius:       10px;
+      --radius-sm:    6px;
+      --font:         'Geist', 'Inter', -apple-system, system-ui, sans-serif;
     }
 
     body {
@@ -51,42 +47,33 @@
       background: var(--header-bg);
       color: #fff;
       padding: 0 20px;
-      height: 64px;
+      height: 60px;
       display: flex;
       align-items: center;
       gap: 14px;
       flex-shrink: 0;
-      box-shadow: 0 2px 8px rgba(0,0,0,.15);
       z-index: 10;
     }
     .header-avatar {
-      width: 42px; height: 42px;
-      background: rgba(255,255,255,.15);
-      border-radius: 50%;
+      width: 36px; height: 36px;
+      background: rgba(255,255,255,0.10);
+      border-radius: 8px;
       display: flex; align-items: center; justify-content: center;
-      font-size: 22px;
+      font-size: 18px;
       flex-shrink: 0;
     }
     .header-info { flex: 1; }
-    .header-name { font-weight: 600; font-size: 16px; letter-spacing: -0.01em; }
-    .header-status {
-      font-size: 12px;
-      opacity: .85;
-      display: flex; align-items: center; gap: 5px;
-    }
-    .header-status .dot {
-      width: 7px; height: 7px;
-      background: var(--accent);
-      border-radius: 50%;
-      display: inline-block;
-    }
+    .header-name  { font-weight: 600; font-size: 15px; letter-spacing: -0.01em; }
+    .header-status { font-size: 11px; color: rgba(255,255,255,0.42); margin-top: 1px; }
     .header-badge {
-      background: rgba(255,255,255,.12);
-      padding: 5px 12px;
+      border: 1px solid rgba(255,255,255,0.15);
+      background: transparent;
+      color: rgba(255,255,255,0.55);
+      padding: 4px 10px;
       border-radius: 20px;
-      font-size: 11px;
+      font-size: 10.5px;
       font-weight: 500;
-      letter-spacing: 0.02em;
+      letter-spacing: 0.05em;
       text-transform: uppercase;
     }
 
@@ -96,457 +83,419 @@
       overflow-y: auto;
       padding: 16px 16px 8px;
       background: var(--chat-bg);
-      background-image:
-        url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='0.02'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
       scroll-behavior: smooth;
     }
-
-    .chat-area::-webkit-scrollbar { width: 6px; }
-    .chat-area::-webkit-scrollbar-thumb {
-      background: rgba(0,0,0,.15);
-      border-radius: 3px;
-    }
+    .chat-area::-webkit-scrollbar { width: 5px; }
+    .chat-area::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.11); border-radius: 3px; }
 
     /* ─── Message Rows ─── */
     .msg-row {
       display: flex;
-      margin-bottom: 4px;
-      animation: msgIn .3s ease;
+      margin-bottom: 2px;
+      animation: msgIn 0.22s ease;
     }
     .msg-row.user { justify-content: flex-end; }
-    .msg-row.bot { justify-content: flex-start; }
+    .msg-row.bot  { flex-direction: column; align-items: flex-start; }
+    .msg-row.user + .msg-row.bot,
+    .msg-row.bot  + .msg-row.user { margin-top: 10px; }
 
     @keyframes msgIn {
-      from { opacity: 0; transform: translateY(8px); }
-      to { opacity: 1; transform: translateY(0); }
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: translateY(0); }
     }
 
     /* ─── Bubbles ─── */
     .bubble {
-      max-width: min(520px, 85%);
-      padding: 8px 12px;
+      max-width: min(520px, 88%);
+      padding: 10px 14px;
       border-radius: var(--radius);
-      box-shadow: var(--shadow);
       position: relative;
-      line-height: 1.55;
-      font-size: 14.5px;
+      line-height: 1.6;
+      font-size: 14px;
       word-wrap: break-word;
     }
     .user .bubble {
       background: var(--user-bubble);
-      border-bottom-right-radius: 4px;
+      color: var(--user-text);
+      border-bottom-right-radius: 3px;
     }
     .bot .bubble {
       background: var(--bot-bubble);
-      border-bottom-left-radius: 4px;
+      border: 1px solid var(--border);
+      border-bottom-left-radius: 3px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
     }
-
     .bubble .time {
-      font-size: 11px;
+      font-size: 10.5px;
       color: var(--text-lighter);
       text-align: right;
-      margin-top: 4px;
+      margin-top: 5px;
     }
+    .user .bubble .time { color: rgba(248,250,252,0.38); }
 
-    /* ─── Markdown inside bot bubbles ─── */
-    .bot .bubble p { margin: 0 0 8px; }
+    /* ─── Markdown in bot bubbles ─── */
+    .bot .bubble p { margin: 0 0 7px; }
     .bot .bubble p:last-child { margin-bottom: 0; }
-    .bot .bubble strong { color: var(--header-bg); font-weight: 600; }
+    .bot .bubble strong { font-weight: 600; color: var(--text); }
     .bot .bubble em { color: var(--text-light); }
-    .bot .bubble ul, .bot .bubble ol {
-      padding-left: 18px;
-      margin: 6px 0;
-    }
-    .bot .bubble li { margin: 3px 0; }
-    .bot .bubble li::marker { color: var(--accent); }
-    .bot .bubble a {
-      color: var(--header-bg);
-      text-decoration: underline;
-      text-decoration-color: rgba(7,94,84,.3);
-    }
-    .bot .bubble hr {
-      border: none;
-      border-top: 1px solid #e5e5e5;
-      margin: 10px 0;
+    .bot .bubble ul, .bot .bubble ol { padding-left: 16px; margin: 5px 0; }
+    .bot .bubble li { margin: 2px 0; }
+    .bot .bubble a { color: var(--accent); text-decoration: underline; text-decoration-color: rgba(0,112,243,0.28); }
+    .bot .bubble hr { border: none; border-top: 1px solid var(--border); margin: 8px 0; }
+    /* Demote any stray markdown headers to body text size */
+    .bot .bubble h1, .bot .bubble h2, .bot .bubble h3,
+    .bot .bubble h4, .bot .bubble h5, .bot .bubble h6 {
+      font-size: 14px; font-weight: 600; margin: 0 0 5px; color: var(--text);
     }
 
-    /* ─── Property Cards (generative UI) ─── */
-    .property-card {
-      background: var(--card-bg);
-      border: 1px solid #d4ede6;
-      border-radius: var(--radius);
-      padding: 14px 16px;
-      margin: 10px 0;
-      position: relative;
-      overflow: hidden;
-      transition: box-shadow .2s;
-    }
-    .property-card:hover {
-      box-shadow: var(--shadow-md);
-    }
-    .property-card::before {
-      content: '';
-      position: absolute;
-      left: 0; top: 0; bottom: 0;
-      width: 4px;
-      background: var(--card-accent);
-      border-radius: 4px 0 0 4px;
-    }
-    .property-card-header {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 10px;
-      margin-bottom: 8px;
-    }
-    .property-card-name {
-      font-weight: 600;
-      font-size: 15px;
-      color: var(--header-bg);
-      line-height: 1.3;
-    }
-    .property-card-number {
-      background: var(--header-bg);
-      color: #fff;
-      width: 24px; height: 24px;
-      border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 12px;
-      font-weight: 700;
-      flex-shrink: 0;
-    }
-    .property-card-price {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      background: var(--card-price);
-      color: #fff;
-      padding: 4px 10px;
-      border-radius: 20px;
-      font-size: 13px;
-      font-weight: 600;
-      margin-bottom: 8px;
-    }
-    .property-card-details {
-      font-size: 13.5px;
-      color: var(--text);
-      line-height: 1.5;
-    }
-    .property-card-details ul {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-    }
-    .property-card-details li {
-      padding: 2px 0;
-      display: flex;
-      align-items: flex-start;
-      gap: 6px;
-    }
-    .property-card-details li::before {
-      content: '✓';
-      color: var(--accent);
-      font-weight: 700;
-      font-size: 12px;
-      margin-top: 2px;
-      flex-shrink: 0;
-    }
-
-    /* ─── Amenity Chips ─── */
-    .amenity-chips {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 5px;
-      margin-top: 8px;
-    }
-    .amenity-chip {
-      background: #e8f5f1;
-      color: var(--header-bg);
-      padding: 3px 9px;
-      border-radius: 12px;
-      font-size: 11.5px;
-      font-weight: 500;
-    }
-
-    /* ─── CTA Buttons (generative UI) ─── */
-    .cta-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 12px;
-    }
-    .cta-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: var(--cta-bg);
-      color: #fff;
-      border: none;
-      padding: 8px 16px;
-      border-radius: 20px;
-      font-size: 13px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all .2s;
-      font-family: var(--font);
-    }
-    .cta-btn:hover { background: var(--cta-hover); transform: translateY(-1px); box-shadow: var(--shadow-md); }
-    .cta-btn.secondary {
-      background: transparent;
-      color: var(--header-bg);
-      border: 1.5px solid var(--header-bg);
-    }
-    .cta-btn.secondary:hover {
-      background: rgba(7,94,84,.06);
-    }
-
-    /* ─── Comparison Table (generative UI) ─── */
-    .compare-table {
-      width: 100%;
-      border-collapse: separate;
-      border-spacing: 0;
-      margin: 10px 0;
-      font-size: 13px;
-      border-radius: var(--radius-sm);
-      overflow: hidden;
-      border: 1px solid #d4ede6;
-    }
-    .compare-table th {
-      background: var(--header-bg);
-      color: #fff;
-      padding: 8px 12px;
-      text-align: left;
-      font-weight: 600;
-      font-size: 12px;
+    /* ─── Agent Badge ─── */
+    .agent-badge {
+      display: block;
+      font-size: 10px;
       text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--text-lighter);
+      font-weight: 500;
+      margin-bottom: 4px;
+      padding-left: 1px;
+    }
+
+    /* ─── Property Carousel ─── */
+    .carousel-wrapper {
+      position: relative;
+      margin: 8px 0 2px;
+    }
+    .carousel-counter {
+      position: absolute;
+      top: 10px; right: 10px;
+      background: rgba(0,0,0,0.52);
+      color: #fff;
+      font-size: 10.5px;
+      font-weight: 500;
+      padding: 3px 9px;
+      border-radius: 20px;
+      pointer-events: none;
+      z-index: 2;
       letter-spacing: 0.03em;
     }
-    .compare-table td {
-      padding: 8px 12px;
-      border-bottom: 1px solid #eee;
+    .property-carousel {
+      display: flex;
+      overflow-x: auto;
+      gap: 10px;
+      padding: 2px 0 6px;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
     }
-    .compare-table tr:last-child td { border-bottom: none; }
-    .compare-table tr:nth-child(even) { background: #f8fffe; }
+    .property-carousel::-webkit-scrollbar { display: none; }
 
-    /* ─── Area Info Card (generative UI) ─── */
-    .area-card {
-      background: linear-gradient(135deg, #075e54 0%, #0a7e6d 100%);
-      color: #fff;
-      border-radius: var(--radius);
-      padding: 16px;
-      margin: 10px 0;
-    }
-    .area-card-title {
-      font-size: 16px;
-      font-weight: 700;
-      margin-bottom: 8px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .area-card-body {
-      font-size: 13.5px;
-      line-height: 1.55;
-      opacity: .95;
-    }
-    .area-card-tags {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      margin-top: 10px;
-    }
-    .area-card-tag {
-      background: rgba(255,255,255,.18);
-      padding: 3px 10px;
+    .property-card {
+      min-width: 260px;
+      max-width: 260px;
+      scroll-snap-align: start;
+      flex-shrink: 0;
+      background: #ffffff;
+      border: 1px solid var(--border);
       border-radius: 12px;
-      font-size: 11.5px;
-      font-weight: 500;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04);
+      display: flex;
+      flex-direction: column;
+      transition: box-shadow 0.2s, transform 0.15s;
+    }
+    .property-card:hover {
+      box-shadow: 0 4px 16px rgba(0,0,0,0.10), 0 2px 6px rgba(0,0,0,0.06);
+      transform: translateY(-1px);
+    }
+    .property-card.single {
+      min-width: 100%;
+      max-width: 100%;
+    }
+    .property-card-image {
+      width: 100%; height: 140px;
+      object-fit: cover;
+      background: #f1f5f9;
+      display: block; flex-shrink: 0;
+    }
+    .property-card-image-placeholder {
+      width: 100%; height: 140px;
+      background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 36px; flex-shrink: 0;
+    }
+    .property-card-body {
+      padding: 12px 14px 14px;
+      display: flex; flex-direction: column;
+      gap: 3px; flex: 1;
+    }
+    .property-card-name {
+      font-size: 14px; font-weight: 600; color: var(--text);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      line-height: 1.3;
+    }
+    .property-card-location {
+      font-size: 11.5px; color: var(--text-light);
+      margin-bottom: 2px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .property-card-rent {
+      font-size: 18px; font-weight: 700; color: var(--text);
+      letter-spacing: -0.02em; margin: 2px 0; line-height: 1.2;
+    }
+    .property-card-rent span { font-size: 11.5px; font-weight: 400; color: var(--text-lighter); }
+    .property-card-meta { font-size: 11px; color: var(--text-lighter); margin-bottom: 8px; }
+    .property-card-actions { display: flex; gap: 7px; margin-top: auto; }
+    .pc-btn {
+      flex: 1;
+      height: 32px;
+      border-radius: var(--radius-sm);
+      font-size: 12px; font-weight: 500;
+      cursor: pointer; font-family: var(--font);
+      display: inline-flex; align-items: center; justify-content: center;
+      transition: opacity 0.14s, transform 0.1s;
+      letter-spacing: 0.01em;
+      text-decoration: none;
+    }
+    .pc-btn.dark  { background: var(--cta-dark); color: #fff; border: none; }
+    .pc-btn.ghost { background: var(--cta-ghost-bg); color: var(--text); border: 1px solid var(--border); }
+    .pc-btn:hover  { opacity: 0.80; }
+    .pc-btn:active { transform: scale(0.95); }
+
+    .carousel-view-all {
+      display: block;
+      font-size: 12px; color: var(--accent); font-weight: 500;
+      cursor: pointer; text-align: right;
+      padding: 3px 0 0;
+    }
+    .carousel-view-all:hover { text-decoration: underline; }
+
+    /* ─── Comparison Component ─── */
+    .compare-card {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin: 8px 0;
+      width: 100%;
+    }
+    .compare-card-header {
+      background: var(--header-bg);
+      color: #fff;
+      padding: 0 14px;
+      height: 46px;
+      display: flex; align-items: center; gap: 8px;
+      font-size: 11px; font-weight: 600;
+      letter-spacing: 0.08em; text-transform: uppercase;
+    }
+    .compare-tbl { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+    .compare-tbl th {
+      background: #f8fafc;
+      padding: 9px 12px;
+      font-weight: 600; font-size: 11.5px;
+      text-align: left; color: var(--text-light);
+      border-bottom: 1px solid var(--border);
+    }
+    .compare-tbl td {
+      padding: 9px 12px;
+      border-bottom: 1px solid #f1f5f9;
+      color: var(--text); vertical-align: middle;
+    }
+    .compare-tbl tr:last-child td { border-bottom: none; }
+    .compare-tbl tr:hover td { background: #fafafa; }
+    .compare-winner {
+      background: #f8fafc;
+      padding: 10px 14px;
+      font-size: 12px; font-weight: 500;
+      color: var(--text);
+      border-top: 1px solid var(--border);
+    }
+    .cmp-yes { font-weight: 700; color: var(--text); }
+    .cmp-no  { color: var(--text-lighter); }
+
+    /* ─── Price inline highlight ─── */
+    .price-inline { font-weight: 700; }
+
+    /* ─── CTA Buttons (inline, legacy) ─── */
+    .cta-row { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 10px; }
+    .cta-btn {
+      display: inline-flex; align-items: center; gap: 5px;
+      background: var(--cta-dark); color: #fff;
+      border: none; padding: 7px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 12.5px; font-weight: 500;
+      cursor: pointer; transition: opacity 0.14s;
+      font-family: var(--font); letter-spacing: 0.01em;
+    }
+    .cta-btn:hover { opacity: 0.80; }
+    .cta-btn.secondary {
+      background: var(--cta-ghost-bg);
+      color: var(--text); border: 1px solid var(--border);
     }
 
-    /* ─── Price Highlight ─── */
-    .price-highlight {
-      display: inline-flex;
-      align-items: center;
-      background: #e8f5f1;
-      color: var(--header-bg);
-      padding: 1px 7px;
-      border-radius: 6px;
-      font-weight: 600;
-      font-size: 14px;
+    /* ─── Quick Reply Chips ─── */
+    .quick-replies {
+      display: flex; flex-wrap: wrap; gap: 7px;
+      padding: 7px 0 10px;
+      max-width: min(520px, 88%);
     }
+    .qr-chip {
+      border: 1px solid var(--border);
+      border-radius: 9999px;
+      background: #ffffff; color: var(--text);
+      height: 32px; padding: 0 14px;
+      font-size: 12.5px; font-weight: 500;
+      cursor: pointer; font-family: var(--font);
+      display: inline-flex; align-items: center; gap: 5px;
+      transition: background 0.12s, border-color 0.12s, box-shadow 0.12s;
+      white-space: nowrap;
+    }
+    .qr-chip:hover {
+      background: #f8fafc;
+      border-color: #94a3b8;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+    .qr-chip:active { background: #f1f5f9; transform: scale(0.96); }
 
     /* ─── Typing Indicator ─── */
     .typing-row { display: flex; margin-bottom: 4px; }
     .typing-bubble {
       background: var(--bot-bubble);
+      border: 1px solid var(--border);
       border-radius: var(--radius);
-      border-bottom-left-radius: 4px;
-      padding: 14px 18px;
-      box-shadow: var(--shadow);
-      display: flex;
-      gap: 5px;
-      align-items: center;
+      border-bottom-left-radius: 3px;
+      padding: 12px 16px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+      display: flex; gap: 5px; align-items: center;
     }
     .typing-dot {
-      width: 8px; height: 8px;
-      background: #90a4ae;
-      border-radius: 50%;
+      width: 7px; height: 7px;
+      background: #cbd5e1; border-radius: 50%;
       animation: typeBounce 1.4s infinite;
     }
-    .typing-dot:nth-child(2) { animation-delay: .15s; }
-    .typing-dot:nth-child(3) { animation-delay: .3s; }
+    .typing-dot:nth-child(2) { animation-delay: 0.15s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.30s; }
     @keyframes typeBounce {
       0%, 60%, 100% { transform: translateY(0); }
-      30% { transform: translateY(-6px); }
+      30% { transform: translateY(-5px); }
     }
 
-    /* ─── Welcome Card ─── */
+    /* ─── Welcome Screen ─── */
     .welcome-card {
-      text-align: center;
-      padding: 32px 24px;
-      margin: 20px auto;
-      max-width: 380px;
+      padding: 28px 4px 20px;
+      margin: 8px auto;
+      max-width: 400px;
     }
-    .welcome-icon { font-size: 48px; margin-bottom: 12px; }
     .welcome-title {
-      font-size: 20px;
-      font-weight: 700;
-      color: var(--header-bg);
-      margin-bottom: 6px;
+      font-size: 22px; font-weight: 700;
+      color: var(--text); margin-bottom: 5px;
+      letter-spacing: -0.02em;
     }
     .welcome-subtitle {
-      font-size: 14px;
-      color: var(--text-light);
-      line-height: 1.5;
-      margin-bottom: 20px;
+      font-size: 13.5px; color: var(--text-light);
+      line-height: 1.55; margin-bottom: 22px;
     }
     .quick-actions {
-      display: flex;
-      flex-wrap: wrap;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
       gap: 8px;
-      justify-content: center;
     }
     .quick-action {
       background: #fff;
-      border: 1.5px solid #d4ede6;
-      border-radius: 20px;
-      padding: 8px 16px;
-      font-size: 13px;
-      font-weight: 500;
-      color: var(--header-bg);
-      cursor: pointer;
-      transition: all .2s;
-      font-family: var(--font);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px 14px;
+      font-size: 13px; font-weight: 500;
+      color: var(--text);
+      cursor: pointer; text-align: left;
+      line-height: 1.4; font-family: var(--font);
+      transition: background 0.12s, border-color 0.12s, box-shadow 0.12s;
     }
     .quick-action:hover {
-      background: #e8f5f1;
-      border-color: var(--header-bg);
-      transform: translateY(-1px);
+      background: #f8fafc;
+      border-color: #94a3b8;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    .quick-action .qa-label {
+      display: block;
+      font-size: 11px; color: var(--text-lighter);
+      font-weight: 400; margin-top: 3px;
     }
 
     /* ─── Input Area ─── */
     .input-area {
-      background: #f0f2f5;
-      padding: 10px 12px;
-      display: flex;
-      align-items: flex-end;
-      gap: 10px;
+      background: #fff;
+      padding: 10px 14px;
+      display: flex; align-items: flex-end; gap: 10px;
       flex-shrink: 0;
-      border-top: 1px solid #e5e5e5;
+      border-top: 1px solid var(--border);
     }
     .input-wrapper {
       flex: 1;
-      background: #fff;
-      border-radius: 24px;
-      display: flex;
-      align-items: flex-end;
-      padding: 6px 16px;
-      box-shadow: var(--shadow);
-      min-height: 44px;
+      background: var(--chat-bg);
+      border-radius: 22px;
+      border: 1px solid var(--border);
+      display: flex; align-items: flex-end;
+      padding: 7px 16px;
+      min-height: 42px;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .input-wrapper:focus-within {
+      border-color: #94a3b8;
+      box-shadow: 0 0 0 3px rgba(0,112,243,0.06);
     }
     .input-wrapper textarea {
-      flex: 1;
-      border: none;
-      outline: none;
-      resize: none;
-      font-family: var(--font);
-      font-size: 15px;
-      line-height: 1.4;
-      max-height: 120px;
-      padding: 6px 0;
-      background: transparent;
-      color: var(--text);
+      flex: 1; border: none; outline: none;
+      resize: none; font-family: var(--font);
+      font-size: 14.5px; line-height: 1.4;
+      max-height: 120px; padding: 2px 0;
+      background: transparent; color: var(--text);
     }
     .input-wrapper textarea::placeholder { color: var(--text-lighter); }
     .send-btn {
-      width: 44px; height: 44px;
+      width: 42px; height: 42px;
       border-radius: 50%;
-      background: var(--header-bg);
-      border: none;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      background: var(--cta-dark);
+      border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
       flex-shrink: 0;
-      transition: all .2s;
+      transition: opacity 0.14s, transform 0.14s;
     }
-    .send-btn:hover { background: var(--header-dark); transform: scale(1.05); }
-    .send-btn:disabled { background: #b0bec5; cursor: not-allowed; transform: none; }
-    .send-btn svg { width: 20px; height: 20px; fill: #fff; }
+    .send-btn:hover { opacity: 0.82; transform: scale(1.04); }
+    .send-btn:disabled { background: #cbd5e1; cursor: not-allowed; transform: none; opacity: 1; }
+    .send-btn svg { width: 18px; height: 18px; fill: #fff; }
 
     /* ─── Cold Start Banner ─── */
     .cold-banner {
-      background: #fff3e0;
-      color: #e65100;
+      background: #0f172a;
+      color: rgba(248,250,252,0.70);
       text-align: center;
-      padding: 8px 16px;
-      font-size: 12.5px;
-      font-weight: 500;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
+      padding: 7px 16px;
+      font-size: 12px;
+      display: none; align-items: center; justify-content: center; gap: 8px;
     }
     .cold-banner.show { display: flex; }
     .cold-spinner {
-      width: 14px; height: 14px;
-      border: 2px solid #e65100;
-      border-top-color: transparent;
+      width: 13px; height: 13px;
+      border: 1.5px solid rgba(248,250,252,0.35);
+      border-top-color: rgba(248,250,252,0.80);
       border-radius: 50%;
-      animation: spin .8s linear infinite;
+      animation: spin 0.8s linear infinite;
+      flex-shrink: 0;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
-
-    /* ─── Agent Badge ─── */
-    .agent-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      font-size: 10.5px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-      color: var(--text-lighter);
-      margin-bottom: 4px;
-    }
-    .agent-badge .agent-dot {
-      width: 6px; height: 6px;
-      border-radius: 50%;
-      background: var(--accent);
-    }
 
     /* ─── Responsive ─── */
     @media (min-width: 768px) {
       body {
         max-width: 480px;
         margin: 0 auto;
-        border-left: 1px solid #ddd;
-        border-right: 1px solid #ddd;
+        border-left: 1px solid var(--border);
+        border-right: 1px solid var(--border);
+        box-shadow: 0 0 40px rgba(0,0,0,0.07);
       }
     }
     @media (max-width: 360px) {
-      .bubble { max-width: 92%; font-size: 14px; }
-      .property-card { padding: 10px 12px; }
+      .bubble { max-width: 93%; font-size: 13.5px; }
+      .property-card { min-width: 240px; max-width: 240px; }
     }
   </style>
 </head>
@@ -556,8 +505,8 @@
   <div class="header">
     <div class="header-avatar">🏠</div>
     <div class="header-info">
-      <div class="header-name">EazyPG</div>
-      <div class="header-status"><span class="dot"></span> Online — Your PG assistant</div>
+      <div class="header-name">OxOtel</div>
+      <div class="header-status">Online · Your PG broker</div>
     </div>
     <div class="header-badge">UAT</div>
   </div>
@@ -565,22 +514,31 @@
   <!-- Cold Start Banner -->
   <div class="cold-banner" id="coldBanner">
     <div class="cold-spinner"></div>
-    <span>Waking up the server… first response may take up to a minute</span>
+    <span>Waking up the server — first response may take ~30s</span>
   </div>
 
   <!-- Chat Area -->
   <div class="chat-area" id="chatArea">
     <div class="welcome-card" id="welcomeCard">
-      <div class="welcome-icon">🏠</div>
-      <div class="welcome-title">Welcome to EazyPG!</div>
-      <div class="welcome-subtitle">
-        I'm your AI PG broker. I'll help you find, compare, and book the perfect PG in Mumbai. Try one of these:
-      </div>
+      <div class="welcome-title">Find your perfect PG</div>
+      <div class="welcome-subtitle">Your AI broker in Mumbai. Search, compare, and book — all in chat.</div>
       <div class="quick-actions">
-        <button class="quick-action" onclick="sendQuick('Show me PGs in Andheri')">🔍 PGs in Andheri</button>
-        <button class="quick-action" onclick="sendQuick('I need a PG near Powai under 12000')">💰 Budget PGs</button>
-        <button class="quick-action" onclick="sendQuick('What areas in Mumbai are good for working professionals?')">📍 Area Guide</button>
-        <button class="quick-action" onclick="sendQuick('I work at BKC, find me a PG nearby')">🏢 Near Office</button>
+        <button class="quick-action" onclick="sendQuick('Show me PGs in Andheri')">
+          🔍 PGs in Andheri
+          <span class="qa-label">Search by area</span>
+        </button>
+        <button class="quick-action" onclick="sendQuick('I need a PG under ₹12,000 near Powai')">
+          💰 Budget PGs
+          <span class="qa-label">Under ₹12k</span>
+        </button>
+        <button class="quick-action" onclick="sendQuick('What areas in Mumbai are good for working professionals?')">
+          📍 Area Guide
+          <span class="qa-label">Neighborhoods</span>
+        </button>
+        <button class="quick-action" onclick="sendQuick('I work at BKC, find me a PG nearby')">
+          🏢 Near Office
+          <span class="qa-label">Commute-first</span>
+        </button>
       </div>
     </div>
   </div>
@@ -588,7 +546,7 @@
   <!-- Input Area -->
   <div class="input-area">
     <div class="input-wrapper">
-      <textarea id="msgInput" rows="1" placeholder="Type your message…"
+      <textarea id="msgInput" rows="1" placeholder="Message OxOtel…"
         onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage()}"
         oninput="autoGrow(this)"></textarea>
     </div>
@@ -623,7 +581,7 @@
       userId = "uat_" + Math.random().toString(36).slice(2, 10);
       localStorage.setItem("eazypg_user_id", userId);
     }
-    let isWaiting = false;
+    let isWaiting  = false;
     let firstRequest = true;
 
     const chatArea = document.getElementById("chatArea");
@@ -631,12 +589,7 @@
     const sendBtn  = document.getElementById("sendBtn");
 
     // ─── Markdown Config ───
-    marked.setOptions({
-      breaks: true,
-      gfm: true,
-      headerIds: false,
-      mangle: false
-    });
+    marked.setOptions({ breaks: true, gfm: true, headerIds: false, mangle: false });
 
     // ─── Auto-grow Textarea ───
     function autoGrow(el) {
@@ -644,10 +597,16 @@
       el.style.height = Math.min(el.scrollHeight, 120) + "px";
     }
 
-    // ─── Quick Action ───
+    // ─── Quick send ───
     function sendQuick(text) {
       msgInput.value = text;
       sendMessage();
+    }
+
+    // ─── Clear the active quick-reply strip ───
+    function clearQuickReplies() {
+      const el = document.getElementById("activeQuickReplies");
+      if (el) el.remove();
     }
 
     // ─── Send Message ───
@@ -655,27 +614,22 @@
       const text = msgInput.value.trim();
       if (!text || isWaiting) return;
 
-      // Hide welcome card
       const wc = document.getElementById("welcomeCard");
       if (wc) wc.style.display = "none";
 
-      // Add user bubble
+      clearQuickReplies();
       addMessage(text, "user");
       msgInput.value = "";
       msgInput.style.height = "auto";
 
-      // Show typing indicator
       isWaiting = true;
       sendBtn.disabled = true;
       const typingEl = showTyping();
 
-      // Show cold start warning on first request
       if (firstRequest) {
         document.getElementById("coldBanner").classList.add("show");
         firstRequest = false;
       }
-
-      const startTime = Date.now();
 
       try {
         const res = await fetch("/api/chat", {
@@ -691,11 +645,8 @@
         if (!res.ok) throw new Error(`Server error: ${res.status}`);
         const data = await res.json();
 
-        // Remove typing + cold banner
         typingEl.remove();
         document.getElementById("coldBanner").classList.remove("show");
-
-        // Add bot message with rich rendering
         addBotMessage(data.response, data.agent);
 
       } catch (err) {
@@ -714,210 +665,336 @@
     function addMessage(text, type) {
       const row = document.createElement("div");
       row.className = `msg-row ${type}`;
-
       const bubble = document.createElement("div");
       bubble.className = "bubble";
       bubble.innerHTML = `<div>${escapeHtml(text)}</div><div class="time">${timeNow()}</div>`;
-
       row.appendChild(bubble);
       chatArea.appendChild(row);
       scrollToBottom();
     }
 
-    // ─── Add bot message with generative UI ───
+    // ─── Add bot message + quick reply chips ───
     function addBotMessage(text, agent) {
       const row = document.createElement("div");
       row.className = "msg-row bot";
 
+      const agentLabel = agent === "broker"  ? "BROKER"    :
+                         agent === "booking" ? "BOOKING"   :
+                         agent === "profile" ? "PROFILE"   :
+                         agent === "room"    ? "ROOMS"     : "ASSISTANT";
+
       const bubble = document.createElement("div");
       bubble.className = "bubble";
+      bubble.innerHTML =
+        `<span class="agent-badge">${agentLabel} · ${timeNow()}</span>` +
+        renderRichMessage(text, agent) +
+        `<div class="time">${timeNow()}</div>`;
 
-      // Agent badge
-      const agentName = agent === "broker" ? "🏠 Broker Agent" :
-                        agent === "booking" ? "📅 Booking Agent" :
-                        agent === "profile" ? "👤 Profile Agent" :
-                        agent === "room" ? "🛏️ Room Agent" : "💬 Assistant";
-
-      const badgeHtml = `<div class="agent-badge"><span class="agent-dot"></span>${agentName}</div>`;
-
-      // Render with generative UI
-      const richHtml = renderRichMessage(text);
-
-      bubble.innerHTML = `${badgeHtml}${richHtml}<div class="time">${timeNow()}</div>`;
-
-      // Wire up CTA buttons
-      bubble.querySelectorAll(".cta-btn").forEach(btn => {
+      // Wire data-action buttons (carousel + cta)
+      bubble.querySelectorAll("[data-action]").forEach(btn => {
         btn.addEventListener("click", () => {
           const action = btn.dataset.action;
-          if (action) {
-            msgInput.value = action;
-            sendMessage();
-          }
+          if (action) sendQuick(action);
         });
       });
 
       row.appendChild(bubble);
+
+      // Quick reply chips — below the bubble, part of same row
+      const chipsHtml = buildQuickReplies(text, agent);
+      if (chipsHtml) {
+        const qrDiv = document.createElement("div");
+        qrDiv.className = "quick-replies";
+        qrDiv.id = "activeQuickReplies";
+        qrDiv.innerHTML = chipsHtml;
+        qrDiv.querySelectorAll(".qr-chip").forEach(chip => {
+          chip.addEventListener("click", () => sendQuick(chip.dataset.action));
+        });
+        row.appendChild(qrDiv);
+      }
+
       chatArea.appendChild(row);
       scrollToBottom();
     }
 
-    // ─── Generative UI: Rich Message Renderer ───
-    function renderRichMessage(text) {
-      // Detect property listings and render as cards
-      const propertyCardPattern = /\*\*(\d+)\.\s*(.+?)\*\*\s*[—–-]\s*(₹[\d,]+(?:\/\s*month|\s*per\s*month|\/mo)?)/g;
-      let hasPropertyCards = false;
-      let processedText = text;
-
-      // Check if response has property listings
-      const matches = [...text.matchAll(propertyCardPattern)];
-      if (matches.length >= 1) {
-        hasPropertyCards = true;
-        processedText = renderPropertyCards(text, matches);
+    // ─── Rich Message Renderer ───
+    function renderRichMessage(text, agent) {
+      // 1. Detect pipe-table → comparison scorecard
+      const tableLines = text.split('\n').filter(l => /\|.*\|/.test(l));
+      if (tableLines.length >= 3) {
+        text = replaceCompareTables(text);
       }
 
-      if (!hasPropertyCards) {
-        // Check for other special patterns
-        processedText = enhanceMarkdown(text);
+      // 2. Detect compact property format: **N. Name**\n📍 ...
+      const compactPattern = /\*\*(\d+)\.\s+(.+?)\*\*\s*\n(📍.+)/gm;
+      const compactMatches = [...text.matchAll(compactPattern)];
+      if (compactMatches.length >= 1) {
+        return renderPropertyCarousel(text, compactMatches, false);
       }
 
-      // Parse markdown
-      let html = marked.parse(processedText);
-
-      // Post-process: highlight prices
-      html = html.replace(/(₹[\d,]+(?:\s*(?:\/\s*(?:month|mo|day|night|bed))|(?:\s*per\s*(?:month|day|night|bed)))?)/g,
-        '<span class="price-highlight">$1</span>');
-
-      // Detect and add CTA buttons
-      const ctaHtml = detectCTAs(text);
-      if (ctaHtml) {
-        html += ctaHtml;
+      // 3. Detect legacy property format: **N. Name** — ₹X
+      const legacyPattern = /\*\*(\d+)\.\s*(.+?)\*\*\s*[—–-]\s*(₹[\d,]+(?:\/\s*(?:month|mo))?)/g;
+      const legacyMatches = [...text.matchAll(legacyPattern)];
+      if (legacyMatches.length >= 1) {
+        return renderPropertyCarousel(text, legacyMatches, true);
       }
 
+      // 4. Default markdown
+      let html = marked.parse(text);
+      html = html.replace(/(₹[\d,]+(?:\s*(?:\/\s*(?:month|mo|day))|(?:\s*per\s*(?:month|day)))?)/g,
+        '<span class="price-inline">$1</span>');
       return `<div class="msg-content">${html}</div>`;
     }
 
-    // ─── Render Property Cards ───
-    function renderPropertyCards(text, matches) {
-      let result = text;
+    // ─── Render Property Carousel (from matched listings) ───
+    function renderPropertyCarousel(text, matches, isLegacy) {
+      const properties = [];
 
-      // Process each property match in reverse to not mess up indices
-      for (let i = matches.length - 1; i >= 0; i--) {
+      for (let i = 0; i < matches.length; i++) {
         const match = matches[i];
-        const num = match[1];
+        const num  = parseInt(match[1]);
         const name = match[2].trim();
-        const price = match[3].trim();
 
-        // Find the full property block (from this match to next match or end)
-        const startIdx = match.index;
-        const nextMatch = i < matches.length - 1 ? matches[i + 1] : null;
-        const endIdx = nextMatch ? nextMatch.index : findPropertyBlockEnd(text, startIdx + match[0].length);
+        const blockStart = match.index;
+        const blockEnd   = i < matches.length - 1 ? matches[i + 1].index : text.length;
+        const block      = text.slice(blockStart, blockEnd);
 
-        const blockText = text.slice(startIdx + match[0].length, endIdx).trim();
+        let price = "", location = "", gender = "", distance = "";
 
-        // Parse amenities from the block
-        const amenityLines = blockText.split('\n')
-          .map(l => l.replace(/^[-•*]\s*/, '').trim())
-          .filter(l => l.length > 0 && l.length < 100);
+        if (isLegacy) {
+          price    = match[3] ? match[3].trim() : "";
+          const firstLine = block.replace(match[0], '').split('\n').find(l => l.trim());
+          location = firstLine ? firstLine.replace(/^📍\s*/, '').split('·')[0].trim() : "";
+        } else {
+          // New compact format — match[3] is the 📍 line
+          const metaLine = match[3].trim();                          // e.g. "📍 Rabale, Mumbai · ₹5,000/mo · Any · ~20km"
+          const parts    = metaLine.replace(/^📍\s*/, '').split('·').map(p => p.trim());
+          location = parts[0] || "";
+          const pm = metaLine.match(/₹[\d,]+(?:\/mo|\/month)?/);
+          price    = pm ? pm[0].replace(/\/month/, '/mo') : "";
+          gender   = parts.find(p => /^(Any|Boys|Girls|All Boys|All Girls|Mixed)/i.test(p)) || "";
+          distance = parts.find(p => /~?[\d.]+\s*km/i.test(p)) || "";
+        }
 
-        // Build property card HTML (will be passed through marked)
-        const cardHtml = buildPropertyCardHtml(num, name, price, amenityLines);
+        // Extract image/link from the full block text
+        const imgM  = block.match(/Image:\s*(https?:\/\/\S+)/i);
+        const linkM = block.match(/Link:\s*(https?:\/\/\S+)/i);
+        const image = imgM  ? imgM[1]  : "";
+        const link  = linkM ? linkM[1] : "";
 
-        result = result.slice(0, startIdx) + '\n' + cardHtml + '\n' + result.slice(endIdx);
+        properties.push({ num, name, price, location, gender, distance, image, link });
       }
 
-      return result;
-    }
+      // Text before first property block
+      const preText = text.slice(0, matches[0].index).trim();
 
-    function findPropertyBlockEnd(text, fromIdx) {
-      // Find end of property block: next blank line followed by non-list content, or end
-      const remaining = text.slice(fromIdx);
-      const lines = remaining.split('\n');
-      let endOffset = 0;
+      // Text after last property block (cleaned up)
+      const lastEnd = (() => {
+        const last = matches[matches.length - 1];
+        return last.index + (
+          matches.length > 1
+            ? (matches[matches.length - 1].index - matches[matches.length - 2].index)
+            : text.length - last.index
+        );
+      })();
+      let postText = text.slice(Math.min(lastEnd, text.length)).trim();
+      postText = postText.replace(/^(?:Image|Link|Match|Distance|For|Type):.*$/gim, '').replace(/\n{3,}/g, '\n\n').trim();
 
-      for (let i = 0; i < lines.length; i++) {
-        const line = lines[i].trim();
-        endOffset += lines[i].length + 1;
+      const isSingle = properties.length === 1;
+      const cardsHtml = properties.map(p => buildPropertyCardHtml(p, isSingle)).join('');
 
-        // Stop at next numbered property or double newline after content
-        if (i > 0 && /^\*\*\d+\./.test(line)) {
-          endOffset -= lines[i].length + 1;
-          break;
-        }
+      let carouselHtml;
+      if (isSingle) {
+        carouselHtml = `<div style="margin:8px 0 4px">${cardsHtml}</div>`;
+      } else {
+        carouselHtml = `
+          <div class="carousel-wrapper">
+            <span class="carousel-counter" id="carouselCounter">1 / ${properties.length}</span>
+            <div class="property-carousel" id="propCarousel" data-total="${properties.length}">${cardsHtml}</div>
+          </div>
+          <span class="carousel-view-all" data-action="Show me all ${properties.length} properties">View all ${properties.length} →</span>
+        `;
       }
 
-      return fromIdx + endOffset;
+      let preHtml  = preText  ? marked.parse(preText)  : "";
+      let postHtml = postText ? marked.parse(postText) : "";
+      [preHtml, postHtml] = [preHtml, postHtml].map(h =>
+        h.replace(/(₹[\d,]+(?:\s*(?:\/\s*(?:month|mo|day)))?)/g, '<span class="price-inline">$1</span>')
+      );
+
+      return `<div class="msg-content">${preHtml}${carouselHtml}${postHtml}</div>`;
     }
 
-    function buildPropertyCardHtml(num, name, price, details) {
-      const detailsHtml = details.map(d =>
-        `<li>${escapeHtml(d)}</li>`
-      ).join('');
+    // ─── Build a single property card ───
+    function buildPropertyCardHtml(p, isSingle) {
+      const imgContent = p.image
+        ? `<img class="property-card-image" src="${escapeAttr(p.image)}" alt="${escapeAttr(p.name)}" loading="lazy"
+              onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+           <div class="property-card-image-placeholder" style="display:none">🏠</div>`
+        : `<div class="property-card-image-placeholder">🏠</div>`;
 
-      // Extract amenity keywords for chips
-      const amenityKeywords = ['WiFi', 'AC', 'Meals', 'Laundry', 'Gym', 'Furnished',
-        'Power Backup', 'Security', 'Parking', 'TV', 'Fridge', 'Geyser',
-        'CCTV', 'Housekeeping', 'Kitchen'];
-      const foundAmenities = [];
-      const allText = details.join(' ');
-      amenityKeywords.forEach(kw => {
-        if (allText.toLowerCase().includes(kw.toLowerCase())) {
-          foundAmenities.push(kw);
-        }
-      });
+      const metaParts = [p.gender, p.distance].filter(Boolean).join(' · ');
 
-      const chipsHtml = foundAmenities.length > 0 ?
-        `<div class="amenity-chips">${foundAmenities.map(a =>
-          `<span class="amenity-chip">${a}</span>`).join('')}</div>` : '';
+      // Strip /mo if we're already appending it in the template
+      const rentDisplay = p.price.replace(/\/mo(nth)?/, '').trim();
 
-      return `<div class="property-card">
-        <div class="property-card-header">
-          <div class="property-card-name">${escapeHtml(name)}</div>
-          <div class="property-card-number">${num}</div>
+      const detailsBtn = `<button class="pc-btn ghost" data-action="Tell me more about ${escapeAttr(p.name)}">Details</button>`;
+      const visitBtn   = `<button class="pc-btn dark"  data-action="Schedule a visit to ${escapeAttr(p.name)}">Book Visit →</button>`;
+      const linkBtn    = p.link
+        ? `<a href="${escapeAttr(p.link)}" target="_blank" rel="noopener" class="pc-btn ghost" style="text-decoration:none">Microsite ↗</a>`
+        : "";
+
+      return `<div class="property-card${isSingle ? ' single' : ''}">
+        ${imgContent}
+        <div class="property-card-body">
+          <div class="property-card-name">${escapeHtml(p.name)}</div>
+          ${p.location ? `<div class="property-card-location">📍 ${escapeHtml(p.location)}</div>` : ""}
+          ${rentDisplay ? `<div class="property-card-rent">${escapeHtml(rentDisplay)}<span>/mo</span></div>` : ""}
+          ${metaParts  ? `<div class="property-card-meta">${escapeHtml(metaParts)}</div>` : ""}
+          <div class="property-card-actions">
+            ${detailsBtn}
+            ${visitBtn}
+            ${linkBtn}
+          </div>
         </div>
-        <div class="property-card-price">💰 ${escapeHtml(price)}</div>
-        <div class="property-card-details">
-          <ul>${detailsHtml}</ul>
-        </div>
-        ${chipsHtml}
       </div>`;
     }
 
-    // ─── Enhance Markdown ───
-    function enhanceMarkdown(text) {
-      return text;
+    // ─── Comparison Table → Scorecard ───
+    function replaceCompareTables(text) {
+      const lines = text.split('\n');
+      const result = [];
+      let tableLines = [];
+
+      for (let i = 0; i < lines.length; i++) {
+        if (/\|.*\|/.test(lines[i])) {
+          tableLines.push(lines[i]);
+        } else {
+          if (tableLines.length >= 3) {
+            result.push(buildCompareCardHtml(tableLines));
+            tableLines = [];
+          } else {
+            result.push(...tableLines);
+            tableLines = [];
+          }
+          result.push(lines[i]);
+        }
+      }
+      if (tableLines.length >= 3) result.push(buildCompareCardHtml(tableLines));
+      else if (tableLines.length) result.push(...tableLines);
+
+      return result.join('\n');
     }
 
-    // ─── Detect CTAs ───
-    function detectCTAs(text) {
-      const lower = text.toLowerCase();
-      const ctaButtons = [];
+    function buildCompareCardHtml(lines) {
+      // Remove separator lines (---|---|---)
+      const dataLines = lines.filter(l => !/^\s*\|?\s*[-:]+\s*[\|-]/.test(l));
+      if (dataLines.length < 2) return lines.join('\n');
 
-      // Detect common CTAs in bot responses
-      if (lower.includes('visit') || lower.includes('schedule')) {
-        ctaButtons.push({ label: '📅 Schedule a Visit', action: 'I want to schedule a visit', primary: true });
-      }
-      if (lower.includes('shortlist') && !lower.includes('shortlisted')) {
-        ctaButtons.push({ label: '⭐ Shortlist', action: 'Shortlist this property', primary: false });
-      }
-      if (lower.includes('compare') || lower.includes('comparison')) {
-        ctaButtons.push({ label: '⚖️ Compare Properties', action: 'Compare these properties', primary: false });
-      }
-      if ((lower.includes('more') && lower.includes('detail')) || lower.includes('tell me more')) {
-        ctaButtons.push({ label: '📋 More Details', action: 'Tell me more about the first property', primary: false });
-      }
-      if (lower.includes('show more') || lower.includes('more option')) {
-        ctaButtons.push({ label: '➕ Show More', action: 'Show more options', primary: false });
-      }
+      const parsedRows = dataLines.map(l =>
+        l.split('|').map(c => c.trim()).filter(c => c !== '')
+      );
 
-      // Only show CTAs if we found relevant ones (max 3)
-      if (ctaButtons.length === 0) return '';
+      const headerRow = parsedRows[0];
+      const dataRows  = parsedRows.slice(1);
 
-      const btns = ctaButtons.slice(0, 3).map(btn =>
-        `<button class="cta-btn ${btn.primary ? '' : 'secondary'}" data-action="${escapeAttr(btn.action)}">${btn.label}</button>`
+      // Separate winner row from data rows
+      const isWinnerRow = r => r.join(' ').match(/🏆|best pick|pick:|recommended/i);
+      const bodyRows  = dataRows.filter(r => !isWinnerRow(r));
+      const winnerRow = dataRows.find(isWinnerRow);
+
+      const colHeaders = headerRow.map(h =>
+        `<th>${escapeHtml(h)}</th>`
       ).join('');
 
-      return `<div class="cta-row">${btns}</div>`;
+      const bodyHtml = bodyRows.map(row => {
+        const cells = row.map(c => {
+          const lc = c.toLowerCase();
+          let cls = '';
+          if (['✓','yes','✅','✔'].includes(lc)) { cls = 'cmp-yes'; c = '✓'; }
+          if (['—','-','no','❌','✗'].includes(lc)) { cls = 'cmp-no'; c = '—'; }
+          return `<td class="${cls}">${escapeHtml(c)}</td>`;
+        }).join('');
+        return `<tr>${cells}</tr>`;
+      }).join('');
+
+      const winnerHtml = winnerRow
+        ? `<div class="compare-winner">🏆 ${escapeHtml(winnerRow.join(' · ').replace(/🏆|best pick:|pick:/gi, '').trim())}</div>`
+        : '';
+
+      return `<div class="compare-card">
+        <div class="compare-card-header">⚖ Comparison</div>
+        <table class="compare-tbl">
+          <thead><tr>${colHeaders}</tr></thead>
+          <tbody>${bodyHtml}</tbody>
+        </table>
+        ${winnerHtml}
+      </div>`;
     }
+
+    // ─── Quick Reply Chips ───
+    function buildQuickReplies(text, agent) {
+      const lower = text.toLowerCase();
+      const chips = [];
+
+      if (agent === "broker") {
+        const hasMulti = /\*\*[23456789]\.\s/.test(text);          // 2+ properties
+        const hasOne   = /\*\*1\.\s/.test(text) && !hasMulti;      // exactly 1 property
+        const isQual   = (lower.includes('budget') || lower.includes('boys') ||
+                          lower.includes('girls') || lower.includes('wifi') ||
+                          lower.includes('must-have') || lower.includes('andheri has') ||
+                          lower.includes('has some great') || lower.includes('quick —'));
+
+        if (isQual) {
+          // Qualifying question shown — no chips, let user type freely
+        } else if (hasMulti) {
+          chips.push({ label: "📋 Details",       action: "Tell me more about the first property" });
+          chips.push({ label: "📅 Book a Visit",  action: "Schedule a visit" });
+          chips.push({ label: "❤️ Shortlist",     action: "Shortlist the first property" });
+          chips.push({ label: "⚖️ Compare top 2", action: "Compare the top 2 properties" });
+        } else if (hasOne) {
+          chips.push({ label: "📅 Book a Visit",  action: "Schedule a visit" });
+          chips.push({ label: "❤️ Shortlist",     action: "Shortlist this property" });
+          chips.push({ label: "🛏️ See Rooms",     action: "Show me room options and pricing" });
+          chips.push({ label: "📸 Images",        action: "Show me photos" });
+        } else if (lower.includes('shortlist') || lower.includes('saved')) {
+          chips.push({ label: "🔍 Search",        action: "Show me properties in Mumbai" });
+          chips.push({ label: "📅 Book a Visit",  action: "Schedule a visit" });
+        } else if (lower.includes('area') || lower.includes('neighborhood') || lower.includes('from what i know')) {
+          chips.push({ label: "🔍 Search Here",   action: "Search for PGs here" });
+          chips.push({ label: "💬 Tell me more",  action: "Tell me more about the area" });
+        }
+      } else if (agent === "booking") {
+        if (lower.includes('confirmed') || lower.includes('scheduled') || lower.includes('booked')) {
+          chips.push({ label: "📋 My Bookings",   action: "Show my upcoming visits" });
+          chips.push({ label: "🏠 Browse More",   action: "Show me more properties" });
+        }
+        if (lower.includes('payment') || lower.includes('token') || lower.includes('link')) {
+          chips.push({ label: "✅ I've paid",     action: "I have completed the payment" });
+        }
+      } else if (agent === "profile") {
+        chips.push({ label: "🔍 Search PGs",     action: "Show me properties in Mumbai" });
+      }
+
+      if (!chips.length) return null;
+      return chips.map(c =>
+        `<button class="qr-chip" data-action="${escapeAttr(c.action)}">${c.label}</button>`
+      ).join('');
+    }
+
+    // ─── Carousel scroll counter sync ───
+    document.addEventListener("scroll", function(e) {
+      const el = e.target;
+      if (!el || !el.classList.contains("property-carousel")) return;
+      const counter = el.parentElement && el.parentElement.querySelector(".carousel-counter");
+      if (!counter) return;
+      const total = parseInt(el.dataset.total) || 0;
+      const cards = el.querySelectorAll(".property-card");
+      if (!cards.length) return;
+      const cardW = cards[0].offsetWidth + 10;
+      const idx   = Math.min(Math.round(el.scrollLeft / cardW) + 1, total);
+      counter.textContent = `${idx} / ${total}`;
+    }, true);
 
     // ─── Typing Indicator ───
     function showTyping() {
@@ -935,23 +1012,20 @@
 
     // ─── Helpers ───
     function escapeHtml(s) {
-      const div = document.createElement("div");
-      div.textContent = s;
-      return div.innerHTML;
+      const d = document.createElement("div");
+      d.textContent = String(s || "");
+      return d.innerHTML;
     }
     function escapeAttr(s) {
-      return s.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+      return String(s || "").replace(/"/g, '&quot;').replace(/'/g, '&#39;');
     }
     function timeNow() {
       return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     }
     function scrollToBottom() {
-      requestAnimationFrame(() => {
-        chatArea.scrollTop = chatArea.scrollHeight;
-      });
+      requestAnimationFrame(() => { chatArea.scrollTop = chatArea.scrollHeight; });
     }
 
-    // ─── Focus input on load ───
     window.addEventListener("load", () => msgInput.focus());
   </script>
 </body>

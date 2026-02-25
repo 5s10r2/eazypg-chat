@@ -95,7 +95,7 @@
       animation: msgIn 0.22s ease;
     }
     .msg-row.user { justify-content: flex-end; }
-    .msg-row.bot  { flex-direction: column; align-items: flex-start; }
+    .msg-row.bot  { flex-direction: column; align-items: flex-start; gap: 4px; }
     .msg-row.user + .msg-row.bot,
     .msg-row.bot  + .msg-row.user { margin-top: 10px; }
 
@@ -675,6 +675,8 @@
     }
 
     // ─── Add bot message + quick reply chips ───
+    // renderRichMessage() returns Part[] — each Part becomes its own .bubble.
+    // Agent badge appears only on the first non-empty bubble.
     function addBotMessage(text, agent) {
       const row = document.createElement("div");
       row.className = "msg-row bot";
@@ -684,23 +686,31 @@
                          agent === "profile" ? "PROFILE"   :
                          agent === "room"    ? "ROOMS"     : "ASSISTANT";
 
-      const bubble = document.createElement("div");
-      bubble.className = "bubble";
-      bubble.innerHTML =
-        `<span class="agent-badge">${agentLabel} · ${timeNow()}</span>` +
-        renderRichMessage(text, agent);
+      const parts = renderRichMessage(text, agent); // always returns Part[]
 
-      // Wire data-action buttons (carousel + cta)
-      bubble.querySelectorAll("[data-action]").forEach(btn => {
-        btn.addEventListener("click", () => {
-          const action = btn.dataset.action;
-          if (action) sendQuick(action);
+      // Helper: create one .bubble, wire its [data-action] buttons
+      function makeBubble(html, showBadge) {
+        const b = document.createElement("div");
+        b.className = "bubble";
+        b.innerHTML = (showBadge
+          ? `<span class="agent-badge">${agentLabel} · ${timeNow()}</span>`
+          : "") + html;
+        b.querySelectorAll("[data-action]").forEach(btn => {
+          btn.addEventListener("click", () => {
+            if (btn.dataset.action) sendQuick(btn.dataset.action);
+          });
         });
-      });
+        return b;
+      }
 
-      row.appendChild(bubble);
+      let badgeShown = false;
+      for (const part of parts) {
+        if (!part.html || !part.html.trim()) continue; // skip empty parts
+        row.appendChild(makeBubble(part.html, !badgeShown));
+        badgeShown = true;
+      }
 
-      // Quick reply chips — below the bubble, part of same row
+      // Quick reply chips — always at bottom of row, completely unchanged
       const chipsHtml = buildQuickReplies(text, agent);
       if (chipsHtml) {
         const qrDiv = document.createElement("div");
@@ -784,11 +794,11 @@
         return renderPropertyCarousel(text, enriched, true);
       }
 
-      // 4. Default markdown
+      // 4. Default markdown — single Part, single bubble
       let html = marked.parse(text);
       html = html.replace(/(₹[\d,]+(?:\s*(?:\/\s*(?:month|mo|day))|(?:\s*per\s*(?:month|day)))?)/g,
         '<span class="price-inline">$1</span>');
-      return `<div class="msg-content">${html}</div>`;
+      return [{ html: `<div class="msg-content">${html}</div>` }];
     }
 
     // ─── Render Property Carousel (from matched listings) ───
@@ -880,7 +890,12 @@
         h.replace(/(₹[\d,]+(?:\s*(?:\/\s*(?:month|mo|day)))?)/g, '<span class="price-inline">$1</span>')
       );
 
-      return `<div class="msg-content">${preHtml}${carouselHtml}${postHtml}</div>`;
+      // Return each content unit as a separate Part — addBotMessage renders each into its own bubble
+      const parts = [];
+      if (preHtml)  parts.push({ html: `<div class="msg-content">${preHtml}</div>` });
+      parts.push({ html: carouselHtml });
+      if (postHtml) parts.push({ html: `<div class="msg-content">${postHtml}</div>` });
+      return parts;
     }
 
     // ─── Build a single property card ───
@@ -949,17 +964,18 @@
       if (buf.length) segments.push({ type: 'text', content: buf.join('\n') });
 
       const priceRe = /(₹[\d,]+(?:\s*(?:\/\s*(?:month|mo|day)))?)/g;
-      let html = '';
+      // Return each segment as a separate Part — text gets its own bubble, table gets its own bubble
+      const parts = [];
       for (const seg of segments) {
         if (seg.type === 'table') {
-          html += buildCompareCardHtml(seg.content);
+          parts.push({ html: buildCompareCardHtml(seg.content) });
         } else {
           let h = marked.parse(seg.content);
           h = h.replace(priceRe, '<span class="price-inline">$1</span>');
-          html += h;
+          if (h.trim()) parts.push({ html: `<div class="msg-content">${h}</div>` });
         }
       }
-      return `<div class="msg-content">${html}</div>`;
+      return parts;
     }
 
     function buildCompareCardHtml(lines) {

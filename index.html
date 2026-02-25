@@ -720,9 +720,10 @@
     // ─── Rich Message Renderer ───
     function renderRichMessage(text, agent) {
       // 1. Detect pipe-table → comparison scorecard
-      const tableLines = text.split('\n').filter(l => /\|.*\|/.test(l));
-      if (tableLines.length >= 3) {
-        text = replaceCompareTables(text);
+      // Render table segments independently to avoid marked.parse() mangling the HTML
+      const pipeLineCount = text.split('\n').filter(l => /\|.*\|/.test(l)).length;
+      if (pipeLineCount >= 3) {
+        return renderWithCompareTable(text);
       }
 
       // 2. Detect compact property format: **N. Name**\n📍 ...
@@ -894,7 +895,51 @@
       </div>`;
     }
 
-    // ─── Comparison Table → Scorecard ───
+    // ─── Render message that contains comparison table(s) ───
+    // Splits text into text/table segments, renders each independently,
+    // preventing marked.parse() from mangling the compare-card HTML.
+    function renderWithCompareTable(text) {
+      const lines = text.split('\n');
+      const segments = []; // {type:'text'|'table', content:string|string[]}
+      let buf = [], tableBuf = [], inTable = false;
+
+      for (const line of lines) {
+        if (/\|.*\|/.test(line)) {
+          if (!inTable && buf.length) {
+            segments.push({ type: 'text', content: buf.join('\n') });
+            buf = [];
+          }
+          inTable = true;
+          tableBuf.push(line);
+        } else {
+          if (inTable) {
+            if (tableBuf.length >= 3) segments.push({ type: 'table', content: tableBuf });
+            else buf.push(...tableBuf);
+            tableBuf = [];
+            inTable = false;
+          }
+          buf.push(line);
+        }
+      }
+      if (inTable && tableBuf.length >= 3) segments.push({ type: 'table', content: tableBuf });
+      else if (tableBuf.length) buf.push(...tableBuf);
+      if (buf.length) segments.push({ type: 'text', content: buf.join('\n') });
+
+      const priceRe = /(₹[\d,]+(?:\s*(?:\/\s*(?:month|mo|day)))?)/g;
+      let html = '';
+      for (const seg of segments) {
+        if (seg.type === 'table') {
+          html += buildCompareCardHtml(seg.content);
+        } else {
+          let h = marked.parse(seg.content);
+          h = h.replace(priceRe, '<span class="price-inline">$1</span>');
+          html += h;
+        }
+      }
+      return `<div class="msg-content">${html}</div>`;
+    }
+
+    // ─── Comparison Table → Scorecard (legacy, still used by renderWithCompareTable indirectly) ───
     function replaceCompareTables(text) {
       const lines = text.split('\n');
       const result = [];
@@ -937,8 +982,11 @@
       const bodyRows  = dataRows.filter(r => !isWinnerRow(r));
       const winnerRow = dataRows.find(isWinnerRow);
 
+      // renderCell: parse inline markdown (bold, italic) in header/cell text
+      const renderCell = t => marked.parseInline ? marked.parseInline(t) : escapeHtml(t);
+
       const colHeaders = headerRow.map(h =>
-        `<th>${escapeHtml(h)}</th>`
+        `<th>${renderCell(h)}</th>`
       ).join('');
 
       const bodyHtml = bodyRows.map(row => {
@@ -947,7 +995,7 @@
           let cls = '';
           if (['✓','yes','✅','✔'].includes(lc)) { cls = 'cmp-yes'; c = '✓'; }
           if (['—','-','no','❌','✗'].includes(lc)) { cls = 'cmp-no'; c = '—'; }
-          return `<td class="${cls}">${escapeHtml(c)}</td>`;
+          return `<td class="${cls}">${cls ? escapeHtml(c) : renderCell(c)}</td>`;
         }).join('');
         return `<tr>${cells}</tr>`;
       }).join('');

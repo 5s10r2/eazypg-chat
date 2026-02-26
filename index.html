@@ -370,6 +370,18 @@
     }
     .qr-chip:active { background: #f1f5f9; transform: scale(0.96); }
 
+    /* ─── Feedback Buttons ─── */
+    .feedback-row {
+      display: flex; gap: 4px; margin-top: 4px;
+    }
+    .feedback-btn {
+      background: none; border: 1px solid transparent; border-radius: 6px;
+      cursor: pointer; padding: 3px 6px; font-size: 14px; opacity: 0.45;
+      transition: opacity 0.15s, background 0.15s, border-color 0.15s;
+    }
+    .feedback-btn:hover { opacity: 1; background: #f1f5f9; border-color: var(--border); }
+    .feedback-btn.selected { opacity: 1; border-color: var(--accent); background: #eff6ff; }
+
     /* ─── Typing Indicator ─── */
     .typing-row { display: flex; margin-bottom: 4px; }
     .typing-bubble {
@@ -822,6 +834,32 @@
       saveChatHistory();
     }
 
+    // ─── Feedback helpers ───
+    function buildFeedbackRow(text, agent) {
+      const div = document.createElement("div");
+      div.className = "feedback-row";
+      const snippet = text.substring(0, 120);
+      div.innerHTML = `<button class="feedback-btn" data-rating="up" title="Good response">👍</button>` +
+                      `<button class="feedback-btn" data-rating="down" title="Bad response">👎</button>`;
+      div.querySelectorAll(".feedback-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          div.querySelectorAll(".feedback-btn").forEach(b => b.classList.remove("selected"));
+          btn.classList.add("selected");
+          sendFeedback(snippet, btn.dataset.rating, agent);
+        });
+      });
+      return div;
+    }
+
+    function sendFeedback(snippet, rating, agent) {
+      const payload = { user_id: userId, message_snippet: snippet, rating, agent: agent || "" };
+      fetch("/api/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      }).catch(() => {});  // fire-and-forget
+    }
+
     // ─── Add bot message + quick reply chips ───
     // renderRichMessage() returns Part[] — each Part becomes its own .bubble.
     // Agent badge appears only on the first non-empty bubble.
@@ -870,6 +908,9 @@
         });
         row.appendChild(qrDiv);
       }
+
+      // Feedback thumbs
+      row.appendChild(buildFeedbackRow(text, agent));
 
       chatArea.appendChild(row);
       scrollToBottom();

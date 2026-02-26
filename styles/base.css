@@ -1,0 +1,46 @@
+/* ─── Reset & Variables ─── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg:           #f8fafc;
+  --chat-bg:      #f1f5f9;
+  --header-bg:    #0a0a0a;
+  --accent:       #0070f3;
+  --user-bubble:  #0f172a;
+  --user-text:    #f8fafc;
+  --bot-bubble:   #ffffff;
+  --border:       #e2e8f0;
+  --text:         #0f172a;
+  --text-light:   #64748b;
+  --text-lighter: #94a3b8;
+  --cta-dark:     #0f172a;
+  --cta-ghost-bg: #ffffff;
+  --radius:       10px;
+  --radius-sm:    6px;
+  --font:         'Geist', 'Inter', -apple-system, system-ui, sans-serif;
+}
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ─── Responsive ─── */
+@media (min-width: 768px) {
+  body {
+    max-width: 480px;
+    margin: 0 auto;
+    border-left: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+    box-shadow: 0 0 40px rgba(0,0,0,0.07);
+  }
+}
+@media (max-width: 360px) {
+  .bubble { max-width: 93%; font-size: 13.5px; }
+  .property-card { min-width: 240px; max-width: 240px; }
+}

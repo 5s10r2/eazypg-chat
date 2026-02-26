@@ -1,0 +1,147 @@
+/* ─── Quick Reply Chips ─── */
+.quick-replies {
+  display: flex; flex-wrap: wrap; gap: 7px;
+  padding: 7px 0 10px;
+  max-width: min(520px, 88%);
+}
+.qr-chip {
+  border: 1px solid var(--border);
+  border-radius: 9999px;
+  background: #ffffff; color: var(--text);
+  height: 32px; padding: 0 14px;
+  font-size: 12.5px; font-weight: 500;
+  cursor: pointer; font-family: var(--font);
+  display: inline-flex; align-items: center; gap: 5px;
+  transition: background 0.12s, border-color 0.12s, box-shadow 0.12s;
+  white-space: nowrap;
+}
+.qr-chip:hover {
+  background: #f8fafc;
+  border-color: #94a3b8;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+.qr-chip:active { background: #f1f5f9; transform: scale(0.96); }
+
+/* ─── Feedback Buttons ─── */
+.feedback-row {
+  display: flex; gap: 4px; margin-top: 4px;
+}
+.feedback-btn {
+  background: none; border: 1px solid transparent; border-radius: 6px;
+  cursor: pointer; padding: 3px 6px; font-size: 14px; opacity: 0.45;
+  transition: opacity 0.15s, background 0.15s, border-color 0.15s;
+}
+.feedback-btn:hover { opacity: 1; background: #f1f5f9; border-color: var(--border); }
+.feedback-btn.selected { opacity: 1; border-color: var(--accent); background: #eff6ff; }
+
+/* ─── Typing Indicator ─── */
+.typing-row { display: flex; margin-bottom: 4px; }
+.typing-bubble {
+  background: var(--bot-bubble);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  border-bottom-left-radius: 3px;
+  padding: 12px 16px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  display: flex; gap: 5px; align-items: center;
+}
+.typing-dot {
+  width: 7px; height: 7px;
+  background: #cbd5e1; border-radius: 50%;
+  animation: typeBounce 1.4s infinite;
+}
+.typing-dot:nth-child(2) { animation-delay: 0.15s; }
+.typing-dot:nth-child(3) { animation-delay: 0.30s; }
+@keyframes typeBounce {
+  0%, 60%, 100% { transform: translateY(0); }
+  30% { transform: translateY(-5px); }
+}
+
+/* ─── Streaming Bubble ─── */
+.stream-status {
+  font-size: 11px;
+  color: var(--text-lighter);
+  padding: 2px 0 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.stream-status .dot-pulse {
+  width: 6px; height: 6px;
+  background: var(--accent);
+  border-radius: 50%;
+  animation: pulse 1.5s ease infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}
+.msg-content.streaming::after {
+  content: "▎";
+  color: var(--text-lighter);
+  animation: blink 1s step-end infinite;
+  margin-left: 1px;
+}
+@keyframes blink { 50% { opacity: 0; } }
+
+/* ─── Welcome Screen ─── */
+.welcome-card {
+  padding: 28px 4px 20px;
+  margin: 8px auto;
+  max-width: 400px;
+}
+.welcome-title {
+  font-size: 22px; font-weight: 700;
+  color: var(--text); margin-bottom: 5px;
+  letter-spacing: -0.02em;
+}
+.welcome-subtitle {
+  font-size: 13.5px; color: var(--text-light);
+  line-height: 1.55; margin-bottom: 22px;
+}
+.quick-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.quick-action {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  font-size: 13px; font-weight: 500;
+  color: var(--text);
+  cursor: pointer; text-align: left;
+  line-height: 1.4; font-family: var(--font);
+  transition: background 0.12s, border-color 0.12s, box-shadow 0.12s;
+}
+.quick-action:hover {
+  background: #f8fafc;
+  border-color: #94a3b8;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+.quick-action .qa-label {
+  display: block;
+  font-size: 11px; color: var(--text-lighter);
+  font-weight: 400; margin-top: 3px;
+}
+
+/* ─── Cold Start Banner ─── */
+.cold-banner {
+  background: #0f172a;
+  color: rgba(248,250,252,0.70);
+  text-align: center;
+  padding: 7px 16px;
+  font-size: 12px;
+  display: none; align-items: center; justify-content: center; gap: 8px;
+}
+.cold-banner.show { display: flex; }
+.cold-spinner {
+  width: 13px; height: 13px;
+  border: 1.5px solid rgba(248,250,252,0.35);
+  border-top-color: rgba(248,250,252,0.80);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  flex-shrink: 0;
+}
+@keyframes spin { to { transform: rotate(360deg); } }

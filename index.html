@@ -551,6 +551,22 @@
       .bubble { max-width: 93%; font-size: 13.5px; }
       .property-card { min-width: 240px; max-width: 240px; }
     }
+
+    /* ─── Language Selector ─── */
+    .lang-select {
+      background: transparent;
+      color: rgba(255,255,255,0.55);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 6px;
+      padding: 4px 6px;
+      font-size: 11px;
+      font-family: var(--font);
+      cursor: pointer;
+      outline: none;
+      flex-shrink: 0;
+    }
+    .lang-select:hover { border-color: rgba(255,255,255,0.30); }
+    .lang-select option { background: #1a1a1a; color: #fff; }
   </style>
 </head>
 <body>
@@ -563,6 +579,11 @@
       <div class="header-status">Online · Your PG broker</div>
     </div>
     <div class="header-badge">UAT</div>
+    <select class="lang-select" id="langSelect" onchange="setLocale(this.value)">
+      <option value="en">EN</option>
+      <option value="hi">HI</option>
+      <option value="mr">MR</option>
+    </select>
     <button class="header-new-chat" onclick="clearChat()" title="New Chat">
       <svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
     </button>
@@ -571,7 +592,7 @@
   <!-- Cold Start Banner -->
   <div class="cold-banner" id="coldBanner">
     <div class="cold-spinner"></div>
-    <span>Waking up the server — first response may take ~30s</span>
+    <span id="coldBannerText">Waking up the server — first response may take ~30s</span>
   </div>
 
   <!-- Chat Area -->
@@ -646,6 +667,152 @@
     const chatArea = document.getElementById("chatArea");
     const msgInput = document.getElementById("msgInput");
     const sendBtn  = document.getElementById("sendBtn");
+
+    // ─── i18n ───
+    let currentLocale = localStorage.getItem("eazypg_locale") || "en";
+
+    const TRANSLATIONS = {
+      en: {
+        header_status: "Online · Your PG broker",
+        cold_banner: "Waking up the server — first response may take ~30s",
+        welcome_title: "Find your perfect PG",
+        welcome_subtitle: "Your AI broker in Mumbai. Search, compare, and book — all in chat.",
+        input_placeholder: "Message OxOtel…",
+        qa_search: "🔍 PGs in Andheri", qa_search_label: "Search by area",
+        qa_budget: "💰 Budget PGs", qa_budget_label: "Under ₹12k",
+        qa_area: "📍 Area Guide", qa_area_label: "Neighborhoods",
+        qa_office: "🏢 Near Office", qa_office_label: "Commute-first",
+        agent_broker: "BROKER", agent_booking: "BOOKING", agent_profile: "PROFILE",
+        agent_room: "ROOMS", agent_default: "ASSISTANT", agent_thinking: "THINKING…",
+        rate_limit: "⏳ You're sending messages too quickly. Please wait **{seconds} seconds** before trying again.",
+        error_generic: "Sorry, something went wrong. Please try again. 🙏",
+        error_moment: "Sorry, something went wrong. Please try again in a moment. 🙏",
+        feedback_good: "Good response", feedback_bad: "Bad response",
+        btn_details: "Details", btn_book_visit: "Book Visit →", btn_microsite: "Microsite ↗",
+        comparison_header: "⚖ Comparison",
+        view_all: "View all {count} →",
+        chip_details: "📋 Details", chip_book_visit: "📅 Book a Visit",
+        chip_shortlist: "❤️ Shortlist", chip_compare_top2: "⚖️ Compare top 2",
+        chip_see_rooms: "🛏️ See Rooms", chip_images: "📸 Images",
+        chip_search: "🔍 Search", chip_search_here: "🔍 Search Here",
+        chip_tell_more: "💬 Tell me more", chip_search_pgs: "🔍 Search PGs",
+        chip_diff_area: "💬 Different Area", chip_my_bookings: "📋 My Bookings",
+        chip_browse_more: "🏠 Browse More", chip_ive_paid: "✅ I've paid",
+        chip_compare: "⚖️ Compare",
+      },
+      hi: {
+        header_status: "ऑनलाइन · आपका PG ब्रोकर",
+        cold_banner: "सर्वर शुरू हो रहा है — पहला जवाब ~30s ले सकता है",
+        welcome_title: "अपना परफेक्ट PG खोजें",
+        welcome_subtitle: "मुंबई में आपका AI ब्रोकर। खोजें, तुलना करें और बुक करें — सब चैट में।",
+        input_placeholder: "OxOtel को मैसेज करें…",
+        qa_search: "🔍 अंधेरी में PG", qa_search_label: "एरिया से खोजें",
+        qa_budget: "💰 बजट PG", qa_budget_label: "₹12k से कम",
+        qa_area: "📍 एरिया गाइड", qa_area_label: "इलाके",
+        qa_office: "🏢 ऑफिस के पास", qa_office_label: "कम्यूट-फर्स्ट",
+        agent_broker: "ब्रोकर", agent_booking: "बुकिंग", agent_profile: "प्रोफ़ाइल",
+        agent_room: "कमरे", agent_default: "सहायक", agent_thinking: "सोच रहा है…",
+        rate_limit: "⏳ आप बहुत तेज़ी से मैसेज भेज रहे हैं। कृपया **{seconds} सेकंड** इंतज़ार करें।",
+        error_generic: "माफ़ कीजिए, कुछ गड़बड़ हो गई। कृपया फिर से कोशिश करें। 🙏",
+        error_moment: "माफ़ कीजिए, कुछ गड़बड़ हो गई। कृपया कुछ देर बाद कोशिश करें। 🙏",
+        feedback_good: "अच्छा जवाब", feedback_bad: "खराब जवाब",
+        btn_details: "विवरण", btn_book_visit: "विज़िट बुक करें →", btn_microsite: "माइक्रोसाइट ↗",
+        comparison_header: "⚖ तुलना",
+        view_all: "सभी {count} देखें →",
+        chip_details: "📋 विवरण", chip_book_visit: "📅 विज़िट बुक करें",
+        chip_shortlist: "❤️ शॉर्टलिस्ट", chip_compare_top2: "⚖️ टॉप 2 की तुलना",
+        chip_see_rooms: "🛏️ कमरे देखें", chip_images: "📸 फ़ोटो",
+        chip_search: "🔍 खोजें", chip_search_here: "🔍 यहाँ खोजें",
+        chip_tell_more: "💬 और बताओ", chip_search_pgs: "🔍 PG खोजें",
+        chip_diff_area: "💬 दूसरा एरिया", chip_my_bookings: "📋 मेरी बुकिंग",
+        chip_browse_more: "🏠 और देखें", chip_ive_paid: "✅ पेमेंट हो गया",
+        chip_compare: "⚖️ तुलना",
+      },
+      mr: {
+        header_status: "ऑनलाइन · तुमचा PG ब्रोकर",
+        cold_banner: "सर्व्हर सुरू होत आहे — पहिला प्रतिसाद ~30s लागू शकतो",
+        welcome_title: "तुमचा परफेक्ट PG शोधा",
+        welcome_subtitle: "मुंबईत तुमचा AI ब्रोकर। शोधा, तुलना करा आणि बुक करा — सगळं चॅटमध्ये.",
+        input_placeholder: "OxOtel ला मेसेज करा…",
+        qa_search: "🔍 अंधेरीत PG", qa_search_label: "एरियाने शोधा",
+        qa_budget: "💰 बजेट PG", qa_budget_label: "₹12k पेक्षा कमी",
+        qa_area: "📍 एरिया गाइड", qa_area_label: "परिसर",
+        qa_office: "🏢 ऑफिसजवळ", qa_office_label: "कम्यूट-फर्स्ट",
+        agent_broker: "ब्रोकर", agent_booking: "बुकिंग", agent_profile: "प्रोफाइल",
+        agent_room: "रूम्स", agent_default: "सहाय्यक", agent_thinking: "विचार करत आहे…",
+        rate_limit: "⏳ तुम्ही खूप लवकर मेसेज पाठवत आहात. कृपया **{seconds} सेकंद** थांबा.",
+        error_generic: "माफ करा, काहीतरी चूक झाली. कृपया पुन्हा प्रयत्न करा. 🙏",
+        error_moment: "माफ करा, काहीतरी चूक झाली. कृपया थोड्या वेळाने प्रयत्न करा. 🙏",
+        feedback_good: "चांगला प्रतिसाद", feedback_bad: "वाईट प्रतिसाद",
+        btn_details: "तपशील", btn_book_visit: "भेट बुक करा →", btn_microsite: "मायक्रोसाइट ↗",
+        comparison_header: "⚖ तुलना",
+        view_all: "सर्व {count} पहा →",
+        chip_details: "📋 तपशील", chip_book_visit: "📅 भेट बुक करा",
+        chip_shortlist: "❤️ शॉर्टलिस्ट", chip_compare_top2: "⚖️ टॉप 2 ची तुलना",
+        chip_see_rooms: "🛏️ रूम्स पहा", chip_images: "📸 फोटो",
+        chip_search: "🔍 शोधा", chip_search_here: "🔍 इथे शोधा",
+        chip_tell_more: "💬 अजून सांगा", chip_search_pgs: "🔍 PG शोधा",
+        chip_diff_area: "💬 वेगळा एरिया", chip_my_bookings: "📋 माझ्या बुकिंग",
+        chip_browse_more: "🏠 अजून पहा", chip_ive_paid: "✅ पेमेंट केलं",
+        chip_compare: "⚖️ तुलना",
+      }
+    };
+
+    function t(key, params) {
+      const val = (TRANSLATIONS[currentLocale] && TRANSLATIONS[currentLocale][key])
+                || TRANSLATIONS.en[key] || key;
+      if (!params) return val;
+      return val.replace(/\{(\w+)\}/g, (_, k) => params[k] !== undefined ? params[k] : `{${k}}`);
+    }
+
+    function agentLabel(agent) {
+      return agent === "broker"  ? t("agent_broker")  :
+             agent === "booking" ? t("agent_booking") :
+             agent === "profile" ? t("agent_profile") :
+             agent === "room"    ? t("agent_room")    : t("agent_default");
+    }
+
+    function buildWelcomeInnerHtml() {
+      return `<div class="welcome-title">${t("welcome_title")}</div>
+        <div class="welcome-subtitle">${t("welcome_subtitle")}</div>
+        <div class="quick-actions">
+          <button class="quick-action" onclick="sendQuick('Show me PGs in Andheri')">
+            ${t("qa_search")}<span class="qa-label">${t("qa_search_label")}</span>
+          </button>
+          <button class="quick-action" onclick="sendQuick('I need a PG under ₹12,000 near Powai')">
+            ${t("qa_budget")}<span class="qa-label">${t("qa_budget_label")}</span>
+          </button>
+          <button class="quick-action" onclick="sendQuick('What areas in Mumbai are good for working professionals?')">
+            ${t("qa_area")}<span class="qa-label">${t("qa_area_label")}</span>
+          </button>
+          <button class="quick-action" onclick="sendQuick('I work at BKC, find me a PG nearby')">
+            ${t("qa_office")}<span class="qa-label">${t("qa_office_label")}</span>
+          </button>
+        </div>`;
+    }
+
+    function setLocale(lang) {
+      if (!TRANSLATIONS[lang]) return;
+      currentLocale = lang;
+      localStorage.setItem("eazypg_locale", lang);
+      document.getElementById("langSelect").value = lang;
+      updateUIStrings();
+      // Notify backend of explicit language override
+      fetch("/api/language", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ user_id: userId, language: lang })
+      }).catch(() => {});
+    }
+
+    function updateUIStrings() {
+      document.querySelector(".header-status").textContent = t("header_status");
+      const coldSpan = document.getElementById("coldBannerText");
+      if (coldSpan) coldSpan.textContent = t("cold_banner");
+      msgInput.placeholder = t("input_placeholder");
+      const wc = document.getElementById("welcomeCard");
+      if (wc) wc.innerHTML = buildWelcomeInnerHtml();
+    }
 
     // ─── Markdown Config ───
     marked.setOptions({ breaks: true, gfm: true, headerIds: false, mangle: false });
@@ -724,10 +891,7 @@
       row.className = "msg-row bot";
       row.style.animation = "none";
 
-      const agentLabel = agent === "broker"  ? "BROKER"    :
-                         agent === "booking" ? "BOOKING"   :
-                         agent === "profile" ? "PROFILE"   :
-                         agent === "room"    ? "ROOMS"     : "ASSISTANT";
+      const label = agentLabel(agent);
 
       const parts = renderRichMessage(text, agent);
       let badgeShown = false;
@@ -737,7 +901,7 @@
         b.className = "bubble";
         b.style.animation = "none";
         b.innerHTML = (!badgeShown
-          ? `<span class="agent-badge">${agentLabel} · ${time || ""}</span>`
+          ? `<span class="agent-badge">${label} · ${time || ""}</span>`
           : "") + part.html;
         b.querySelectorAll("[data-action]").forEach(btn => {
           btn.addEventListener("click", () => {
@@ -773,24 +937,7 @@
       firstRequest = true;
 
       // Remove all messages, re-insert welcome card
-      chatArea.innerHTML = `<div class="welcome-card" id="welcomeCard">
-        <div class="welcome-title">Find your perfect PG</div>
-        <div class="welcome-subtitle">Your AI broker in Mumbai. Search, compare, and book — all in chat.</div>
-        <div class="quick-actions">
-          <button class="quick-action" onclick="sendQuick('Show me PGs in Andheri')">
-            🔍 PGs in Andheri<span class="qa-label">Search by area</span>
-          </button>
-          <button class="quick-action" onclick="sendQuick('I need a PG under ₹12,000 near Powai')">
-            💰 Budget PGs<span class="qa-label">Under ₹12k</span>
-          </button>
-          <button class="quick-action" onclick="sendQuick('What areas in Mumbai are good for working professionals?')">
-            📍 Area Guide<span class="qa-label">Neighborhoods</span>
-          </button>
-          <button class="quick-action" onclick="sendQuick('I work at BKC, find me a PG nearby')">
-            🏢 Near Office<span class="qa-label">Commute-first</span>
-          </button>
-        </div>
-      </div>`;
+      chatArea.innerHTML = `<div class="welcome-card" id="welcomeCard">${buildWelcomeInnerHtml()}</div>`;
       msgInput.focus();
     }
 
@@ -840,10 +987,7 @@
           const wait = errData.retry_after || 10;
           row.remove();
           document.getElementById("coldBanner").classList.remove("show");
-          addBotMessage(
-            `⏳ You're sending messages too quickly. Please wait **${wait} seconds** before trying again.`,
-            "system"
-          );
+          addBotMessage(t("rate_limit", { seconds: wait }), "system");
           isWaiting = false;
           sendBtn.disabled = false;
           return;
@@ -889,10 +1033,13 @@
             switch (eventType) {
               case "agent_start": {
                 agentName = parsed.agent;
-                const label = agentName === "broker"  ? "BROKER"  :
-                              agentName === "booking" ? "BOOKING" :
-                              agentName === "profile" ? "PROFILE" : "ASSISTANT";
-                badgeEl.textContent = label + " · " + timeNow();
+                // Sync locale from backend detection
+                if (parsed.locale && TRANSLATIONS[parsed.locale]) {
+                  currentLocale = parsed.locale;
+                  localStorage.setItem("eazypg_locale", parsed.locale);
+                  document.getElementById("langSelect").value = parsed.locale;
+                }
+                badgeEl.textContent = agentLabel(agentName) + " · " + timeNow();
                 document.getElementById("coldBanner").classList.remove("show");
                 break;
               }
@@ -928,7 +1075,7 @@
 
         // Replace streaming row with full rich rendering (carousels, tables, etc.)
         if (!fullText) {
-          fullText = "Sorry, something went wrong. Please try again. 🙏";
+          fullText = t("error_generic");
           agentName = agentName || "system";
         }
         row.remove();
@@ -937,7 +1084,7 @@
       } catch (err) {
         document.getElementById("coldBanner").classList.remove("show");
         row.remove();
-        addBotMessage("Sorry, something went wrong. Please try again in a moment. 🙏", "system");
+        addBotMessage(t("error_moment"), "system");
         console.error(err);
       } finally {
         isWaiting = false;
@@ -966,8 +1113,8 @@
       const div = document.createElement("div");
       div.className = "feedback-row";
       const snippet = text.substring(0, 120);
-      div.innerHTML = `<button class="feedback-btn" data-rating="up" title="Good response">👍</button>` +
-                      `<button class="feedback-btn" data-rating="down" title="Bad response">👎</button>`;
+      div.innerHTML = `<button class="feedback-btn" data-rating="up" title="${t("feedback_good")}">👍</button>` +
+                      `<button class="feedback-btn" data-rating="down" title="${t("feedback_bad")}">👎</button>`;
       div.querySelectorAll(".feedback-btn").forEach(btn => {
         btn.addEventListener("click", () => {
           div.querySelectorAll(".feedback-btn").forEach(b => b.classList.remove("selected"));
@@ -994,10 +1141,7 @@
       const row = document.createElement("div");
       row.className = "msg-row bot";
 
-      const agentLabel = agent === "broker"  ? "BROKER"    :
-                         agent === "booking" ? "BOOKING"   :
-                         agent === "profile" ? "PROFILE"   :
-                         agent === "room"    ? "ROOMS"     : "ASSISTANT";
+      const label = agentLabel(agent);
 
       // Prefer server-parsed parts (structured output) over client-side regex
       const parts = (serverParts && serverParts.length)
@@ -1009,7 +1153,7 @@
         const b = document.createElement("div");
         b.className = "bubble";
         b.innerHTML = (showBadge
-          ? `<span class="agent-badge">${agentLabel} · ${timeNow()}</span>`
+          ? `<span class="agent-badge">${label} · ${timeNow()}</span>`
           : "") + html;
         b.querySelectorAll("[data-action]").forEach(btn => {
           btn.addEventListener("click", () => {
@@ -1087,7 +1231,7 @@
                 <span class="carousel-counter" id="cc${cid}">1 / ${props.length}</span>
                 <div class="property-carousel" id="pc${cid}" data-total="${props.length}">${cardsHtml}</div>
               </div>
-              <span class="carousel-view-all" data-action="Show me all ${props.length} properties">View all ${props.length} →</span>
+              <span class="carousel-view-all" data-action="Show me all ${props.length} properties">${t("view_all", { count: props.length })}</span>
             `;
           }
           htmlParts.push({ html: carouselHtml });
@@ -1115,7 +1259,7 @@
             : '';
 
           htmlParts.push({ html: `<div class="compare-card">
-            <div class="compare-card-header">⚖ Comparison</div>
+            <div class="compare-card-header">${t("comparison_header")}</div>
             <table class="compare-tbl">
               <thead><tr>${colHeaders}</tr></thead>
               <tbody>${bodyHtml}</tbody>
@@ -1281,7 +1425,7 @@
             <span class="carousel-counter" id="cc${cid}">1 / ${properties.length}</span>
             <div class="property-carousel" id="pc${cid}" data-total="${properties.length}">${cardsHtml}</div>
           </div>
-          <span class="carousel-view-all" data-action="Show me all ${properties.length} properties">View all ${properties.length} →</span>
+          <span class="carousel-view-all" data-action="Show me all ${properties.length} properties">${t("view_all", { count: properties.length })}</span>
         `;
       }
 
@@ -1312,10 +1456,10 @@
       // Strip /mo if we're already appending it in the template
       const rentDisplay = p.price.replace(/\/mo(nth)?/, '').trim();
 
-      const detailsBtn = `<button class="pc-btn ghost" data-action="Tell me more about ${escapeAttr(p.name)}">Details</button>`;
-      const visitBtn   = `<button class="pc-btn dark"  data-action="Schedule a visit to ${escapeAttr(p.name)}">Book Visit →</button>`;
+      const detailsBtn = `<button class="pc-btn ghost" data-action="Tell me more about ${escapeAttr(p.name)}">${t("btn_details")}</button>`;
+      const visitBtn   = `<button class="pc-btn dark"  data-action="Schedule a visit to ${escapeAttr(p.name)}">${t("btn_book_visit")}</button>`;
       const linkBtn    = p.link
-        ? `<a href="${escapeAttr(p.link)}" target="_blank" rel="noopener" class="pc-btn ghost" style="text-decoration:none">Microsite ↗</a>`
+        ? `<a href="${escapeAttr(p.link)}" target="_blank" rel="noopener" class="pc-btn ghost" style="text-decoration:none">${t("btn_microsite")}</a>`
         : "";
 
       return `<div class="property-card${isSingle ? ' single' : ''}">
@@ -1419,7 +1563,7 @@
         : '';
 
       return `<div class="compare-card">
-        <div class="compare-card-header">⚖ Comparison</div>
+        <div class="compare-card-header">${t("comparison_header")}</div>
         <table class="compare-tbl">
           <thead><tr>${colHeaders}</tr></thead>
           <tbody>${bodyHtml}</tbody>
@@ -1459,48 +1603,48 @@
         if (isQual) {
           // Qualifying question shown — no chips, let user type freely
         } else if (hasMulti) {
-          chips.push({ label: "📋 Details",       action: "Tell me more about the first property" });
-          chips.push({ label: "📅 Book a Visit",  action: "Schedule a visit" });
-          chips.push({ label: "❤️ Shortlist",     action: "Shortlist the first property" });
-          chips.push({ label: "⚖️ Compare top 2", action: "Compare the top 2 properties" });
+          chips.push({ label: t("chip_details"),      action: "Tell me more about the first property" });
+          chips.push({ label: t("chip_book_visit"),   action: "Schedule a visit" });
+          chips.push({ label: t("chip_shortlist"),    action: "Shortlist the first property" });
+          chips.push({ label: t("chip_compare_top2"), action: "Compare the top 2 properties" });
         } else if (hasOne) {
-          chips.push({ label: "📅 Book a Visit",  action: "Schedule a visit" });
-          chips.push({ label: "❤️ Shortlist",     action: "Shortlist this property" });
-          chips.push({ label: "🛏️ See Rooms",     action: "Show me room options and pricing" });
-          chips.push({ label: "📸 Images",        action: "Show me photos" });
+          chips.push({ label: t("chip_book_visit"),   action: "Schedule a visit" });
+          chips.push({ label: t("chip_shortlist"),    action: "Shortlist this property" });
+          chips.push({ label: t("chip_see_rooms"),    action: "Show me room options and pricing" });
+          chips.push({ label: t("chip_images"),       action: "Show me photos" });
         } else if (lower.includes('shortlist') || lower.includes('saved')) {
-          chips.push({ label: "🔍 Search",        action: "Show me properties in Mumbai" });
-          chips.push({ label: "📅 Book a Visit",  action: "Schedule a visit" });
+          chips.push({ label: t("chip_search"),       action: "Show me properties in Mumbai" });
+          chips.push({ label: t("chip_book_visit"),   action: "Schedule a visit" });
         } else if (!hasMulti && !hasOne && (lower.includes('neighborhood') || lower.includes('from what i know') ||
                    (lower.includes('area') && lower.includes('search')))) {
           // Area guide responses only — not search results that mention "area" in passing
-          chips.push({ label: "🔍 Search Here",   action: "Search for PGs here" });
-          chips.push({ label: "💬 Tell me more",  action: "Tell me more about the area" });
+          chips.push({ label: t("chip_search_here"),  action: "Search for PGs here" });
+          chips.push({ label: t("chip_tell_more"),    action: "Tell me more about the area" });
         } else if (!hasMulti && !hasOne && (
           lower.includes('rent starts from') || lower.includes("here's what we have") ||
           lower.includes('type: flat') || lower.includes('type: pg') ||
           lower.includes('type: hostel') || lower.includes('type: co-living') ||
           (lower.includes('₹') && lower.includes('/month') && lower.includes('📍')))) {
           // Property detail view — show action chips
-          chips.push({ label: "📅 Book a Visit",  action: "Schedule a visit" });
-          chips.push({ label: "❤️ Shortlist",     action: "Shortlist this property" });
-          chips.push({ label: "🛏️ See Rooms",     action: "Show me room options and pricing" });
-          chips.push({ label: "⚖️ Compare",       action: "Compare the top 2 properties" });
+          chips.push({ label: t("chip_book_visit"),   action: "Schedule a visit" });
+          chips.push({ label: t("chip_shortlist"),    action: "Shortlist this property" });
+          chips.push({ label: t("chip_see_rooms"),    action: "Show me room options and pricing" });
+          chips.push({ label: t("chip_compare"),      action: "Compare the top 2 properties" });
         } else if (!hasMulti && !hasOne) {
           // Generic broker response — offer to search
-          chips.push({ label: "🔍 Search PGs",    action: "Show me properties in Mumbai" });
-          chips.push({ label: "💬 Different Area", action: "Search in a different area" });
+          chips.push({ label: t("chip_search_pgs"),   action: "Show me properties in Mumbai" });
+          chips.push({ label: t("chip_diff_area"),    action: "Search in a different area" });
         }
       } else if (agent === "booking") {
         if (lower.includes('confirmed') || lower.includes('scheduled') || lower.includes('booked')) {
-          chips.push({ label: "📋 My Bookings",   action: "Show my upcoming visits" });
-          chips.push({ label: "🏠 Browse More",   action: "Show me more properties" });
+          chips.push({ label: t("chip_my_bookings"),  action: "Show my upcoming visits" });
+          chips.push({ label: t("chip_browse_more"),  action: "Show me more properties" });
         }
         if (lower.includes('payment') || lower.includes('token') || lower.includes('link')) {
-          chips.push({ label: "✅ I've paid",     action: "I have completed the payment" });
+          chips.push({ label: t("chip_ive_paid"),     action: "I have completed the payment" });
         }
       } else if (agent === "profile") {
-        chips.push({ label: "🔍 Search PGs",     action: "Show me properties in Mumbai" });
+        chips.push({ label: t("chip_search_pgs"),    action: "Show me properties in Mumbai" });
       }
 
       if (!chips.length) return null;
@@ -1547,7 +1691,7 @@
 
       const badge = document.createElement("span");
       badge.className = "agent-badge";
-      badge.textContent = "THINKING…";
+      badge.textContent = t("agent_thinking");
 
       const status = document.createElement("div");
       status.className = "stream-status";
@@ -1581,6 +1725,13 @@
     }
 
     window.addEventListener("load", () => {
+      // Restore saved locale
+      const savedLocale = localStorage.getItem("eazypg_locale");
+      if (savedLocale && TRANSLATIONS[savedLocale]) {
+        currentLocale = savedLocale;
+        document.getElementById("langSelect").value = savedLocale;
+        updateUIStrings();
+      }
       loadChatHistory();
       msgInput.focus();
     });

@@ -5,6 +5,12 @@
     },
     "api/stream.js": {
       "maxDuration": 120
+    },
+    "api/analytics.js": {
+      "maxDuration": 30
+    },
+    "api/language.js": {
+      "maxDuration": 10
     }
   }
 }

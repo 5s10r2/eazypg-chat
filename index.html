@@ -835,6 +835,19 @@
           })
         });
 
+        if (res.status === 429) {
+          const errData = await res.json().catch(() => ({}));
+          const wait = errData.retry_after || 10;
+          row.remove();
+          document.getElementById("coldBanner").classList.remove("show");
+          addBotMessage(
+            `⏳ You're sending messages too quickly. Please wait **${wait} seconds** before trying again.`,
+            "system"
+          );
+          isWaiting = false;
+          sendBtn.disabled = false;
+          return;
+        }
         if (!res.ok) throw new Error(`Server error: ${res.status}`);
 
         // If backend returned JSON instead of SSE (e.g. error), fallback

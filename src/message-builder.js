@@ -7,6 +7,7 @@ import { buildQuickReplies } from './quick-replies.js';
 import { renderRichMessage } from './renderers/rich-message.js';
 import { renderFromServerParts } from './renderers/server-parts.js';
 import { saveChatHistory } from './chat-history.js';
+import { initMapPlaceholders } from './components/PropertyMap.js';
 
 // ─── Add user message ───
 export function addMessage(text, type) {
@@ -37,7 +38,7 @@ export function addBotMessage(text, agent, serverParts) {
     ? (renderFromServerParts(serverParts) || renderRichMessage(text, agent))
     : renderRichMessage(text, agent);
 
-  // Helper: create one .bubble, wire its [data-action] buttons
+  // Helper: create one .bubble, wire its [data-action] buttons + map placeholders
   function makeBubble(html, showBadge) {
     const b = document.createElement("div");
     b.className = "bubble";
@@ -49,6 +50,8 @@ export function addBotMessage(text, agent, serverParts) {
         if (btn.dataset.action) window.sendQuick(btn.dataset.action);
       });
     });
+    // Initialize any map placeholders inside this bubble
+    initMapPlaceholders(b);
     return b;
   }
 

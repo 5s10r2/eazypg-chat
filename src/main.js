@@ -7,6 +7,8 @@ import '../styles/carousel.css';
 import '../styles/compare.css';
 import '../styles/input.css';
 import '../styles/components.css';
+import '../styles/map.css';
+import 'leaflet/dist/leaflet.css';
 
 // marked.js from npm
 import { marked } from 'marked';

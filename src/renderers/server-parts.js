@@ -25,6 +25,8 @@ export function renderFromServerParts(serverParts) {
         distance: p.distance || "",
         image: p.image || "",
         link: p.link || "",
+        lat: p.lat || "",
+        lng: p.lng || "",
       }));
       if (!props.length) continue;
 
@@ -44,6 +46,16 @@ export function renderFromServerParts(serverParts) {
           <span class="carousel-view-all" data-action="Show me all ${props.length} properties">${t("view_all", { count: props.length })}</span>
         `;
       }
+      // Add map placeholder if any properties have lat/lng
+      const mappable = props.filter(p => p.lat && p.lng);
+      if (mappable.length > 0) {
+        const mapData = mappable.map(p => ({ name: p.name, rent: p.price, lat: p.lat, lng: p.lng }));
+        const mapCenter = part.map_center || {};
+        const safeProps  = JSON.stringify(mapData).replace(/'/g, '&#39;');
+        const safeCenter = JSON.stringify(mapCenter).replace(/'/g, '&#39;');
+        carouselHtml += `<div class="map-placeholder" data-properties='${safeProps}' data-map-center='${safeCenter}'></div>`;
+      }
+
       htmlParts.push({ html: carouselHtml });
 
     } else if (part.type === "comparison_table") {

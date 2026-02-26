@@ -76,6 +76,21 @@
       letter-spacing: 0.05em;
       text-transform: uppercase;
     }
+    .header-new-chat {
+      width: 34px; height: 34px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.15);
+      background: transparent;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      transition: background 0.14s, border-color 0.14s;
+    }
+    .header-new-chat:hover {
+      background: rgba(255,255,255,0.10);
+      border-color: rgba(255,255,255,0.30);
+    }
+    .header-new-chat svg { width: 16px; height: 16px; fill: none; stroke: rgba(255,255,255,0.60); stroke-width: 2; stroke-linecap: round; }
 
     /* ─── Chat Area ─── */
     .chat-area {
@@ -509,6 +524,9 @@
       <div class="header-status">Online · Your PG broker</div>
     </div>
     <div class="header-badge">UAT</div>
+    <button class="header-new-chat" onclick="clearChat()" title="New Chat">
+      <svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+    </button>
   </div>
 
   <!-- Cold Start Banner -->
@@ -584,6 +602,7 @@
     }
     let isWaiting  = false;
     let firstRequest = true;
+    let chatHistory = [];
 
     const chatArea = document.getElementById("chatArea");
     const msgInput = document.getElementById("msgInput");
@@ -608,6 +627,132 @@
     function clearQuickReplies() {
       const el = document.getElementById("activeQuickReplies");
       if (el) el.remove();
+    }
+
+    // ─── Chat Persistence (localStorage) ───
+    const HISTORY_KEY = "eazypg_chat_history";
+    const MAX_HISTORY = 100;
+
+    function saveChatHistory() {
+      try {
+        localStorage.setItem(HISTORY_KEY, JSON.stringify(chatHistory.slice(-MAX_HISTORY)));
+      } catch (e) { console.warn("Failed to save chat history:", e); }
+    }
+
+    function loadChatHistory() {
+      try {
+        const raw = localStorage.getItem(HISTORY_KEY);
+        if (!raw) return;
+        chatHistory = JSON.parse(raw);
+        if (!chatHistory.length) return;
+
+        const wc = document.getElementById("welcomeCard");
+        if (wc) wc.style.display = "none";
+
+        // Replay without animation
+        chatArea.style.scrollBehavior = "auto";
+        for (let i = 0; i < chatHistory.length; i++) {
+          const msg = chatHistory[i];
+          const isLast = i === chatHistory.length - 1;
+          if (msg.role === "user") {
+            restoreUserMsg(msg.text, msg.time);
+          } else {
+            restoreBotMsg(msg.text, msg.agent, msg.time, isLast);
+          }
+        }
+        scrollToBottom();
+        chatArea.style.scrollBehavior = "smooth";
+        firstRequest = false;
+      } catch (e) {
+        console.warn("Failed to load chat history:", e);
+        chatHistory = [];
+      }
+    }
+
+    function restoreUserMsg(text, time) {
+      const row = document.createElement("div");
+      row.className = "msg-row user";
+      row.style.animation = "none";
+      const bubble = document.createElement("div");
+      bubble.className = "bubble";
+      bubble.innerHTML = `<div>${escapeHtml(text)}</div><div class="time">${time || ""}</div>`;
+      row.appendChild(bubble);
+      chatArea.appendChild(row);
+    }
+
+    function restoreBotMsg(text, agent, time, isLast) {
+      const row = document.createElement("div");
+      row.className = "msg-row bot";
+      row.style.animation = "none";
+
+      const agentLabel = agent === "broker"  ? "BROKER"    :
+                         agent === "booking" ? "BOOKING"   :
+                         agent === "profile" ? "PROFILE"   :
+                         agent === "room"    ? "ROOMS"     : "ASSISTANT";
+
+      const parts = renderRichMessage(text, agent);
+      let badgeShown = false;
+      for (const part of parts) {
+        if (!part.html || !part.html.trim()) continue;
+        const b = document.createElement("div");
+        b.className = "bubble";
+        b.style.animation = "none";
+        b.innerHTML = (!badgeShown
+          ? `<span class="agent-badge">${agentLabel} · ${time || ""}</span>`
+          : "") + part.html;
+        b.querySelectorAll("[data-action]").forEach(btn => {
+          btn.addEventListener("click", () => {
+            if (btn.dataset.action) sendQuick(btn.dataset.action);
+          });
+        });
+        row.appendChild(b);
+        badgeShown = true;
+      }
+
+      // Quick reply chips only on the very last restored bot message
+      if (isLast) {
+        const chipsHtml = buildQuickReplies(text, agent);
+        if (chipsHtml) {
+          const qrDiv = document.createElement("div");
+          qrDiv.className = "quick-replies";
+          qrDiv.id = "activeQuickReplies";
+          qrDiv.innerHTML = chipsHtml;
+          qrDiv.querySelectorAll(".qr-chip").forEach(chip => {
+            chip.addEventListener("click", () => sendQuick(chip.dataset.action));
+          });
+          row.appendChild(qrDiv);
+        }
+      }
+
+      chatArea.appendChild(row);
+    }
+
+    function clearChat() {
+      chatHistory = [];
+      localStorage.removeItem(HISTORY_KEY);
+      _carouselSeq = 0;
+      firstRequest = true;
+
+      // Remove all messages, re-insert welcome card
+      chatArea.innerHTML = `<div class="welcome-card" id="welcomeCard">
+        <div class="welcome-title">Find your perfect PG</div>
+        <div class="welcome-subtitle">Your AI broker in Mumbai. Search, compare, and book — all in chat.</div>
+        <div class="quick-actions">
+          <button class="quick-action" onclick="sendQuick('Show me PGs in Andheri')">
+            🔍 PGs in Andheri<span class="qa-label">Search by area</span>
+          </button>
+          <button class="quick-action" onclick="sendQuick('I need a PG under ₹12,000 near Powai')">
+            💰 Budget PGs<span class="qa-label">Under ₹12k</span>
+          </button>
+          <button class="quick-action" onclick="sendQuick('What areas in Mumbai are good for working professionals?')">
+            📍 Area Guide<span class="qa-label">Neighborhoods</span>
+          </button>
+          <button class="quick-action" onclick="sendQuick('I work at BKC, find me a PG nearby')">
+            🏢 Near Office<span class="qa-label">Commute-first</span>
+          </button>
+        </div>
+      </div>`;
+      msgInput.focus();
     }
 
     // ─── Send Message ───
@@ -668,10 +813,13 @@
       row.className = `msg-row ${type}`;
       const bubble = document.createElement("div");
       bubble.className = "bubble";
-      bubble.innerHTML = `<div>${escapeHtml(text)}</div><div class="time">${timeNow()}</div>`;
+      const time = timeNow();
+      bubble.innerHTML = `<div>${escapeHtml(text)}</div><div class="time">${time}</div>`;
       row.appendChild(bubble);
       chatArea.appendChild(row);
       scrollToBottom();
+      chatHistory.push({ role: "user", text, time });
+      saveChatHistory();
     }
 
     // ─── Add bot message + quick reply chips ───
@@ -725,6 +873,8 @@
 
       chatArea.appendChild(row);
       scrollToBottom();
+      chatHistory.push({ role: "bot", text, agent, time: timeNow() });
+      saveChatHistory();
     }
 
     // ─── Rich Message Renderer ───
@@ -1152,7 +1302,10 @@
       requestAnimationFrame(() => { chatArea.scrollTop = chatArea.scrollHeight; });
     }
 
-    window.addEventListener("load", () => msgInput.focus());
+    window.addEventListener("load", () => {
+      loadChatHistory();
+      msgInput.focus();
+    });
   </script>
 </body>
 </html>

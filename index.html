@@ -1038,6 +1038,7 @@
                   currentLocale = parsed.locale;
                   localStorage.setItem("eazypg_locale", parsed.locale);
                   document.getElementById("langSelect").value = parsed.locale;
+                  updateUIStrings();
                 }
                 badgeEl.textContent = agentLabel(agentName) + " · " + timeNow();
                 document.getElementById("coldBanner").classList.remove("show");

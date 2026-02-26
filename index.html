@@ -822,6 +822,7 @@
 
       let fullText = "";
       let agentName = "";
+      let serverParts = null;
 
       try {
         const res = await fetch("/api/stream", {
@@ -901,6 +902,7 @@
               case "done":
                 agentName = parsed.agent || agentName;
                 fullText = parsed.full_response || fullText;
+                serverParts = parsed.parts || null;
                 break;
               case "error":
                 fullText = fullText || parsed.text || "Something went wrong.";
@@ -917,7 +919,7 @@
           agentName = agentName || "system";
         }
         row.remove();
-        addBotMessage(fullText, agentName || "default");
+        addBotMessage(fullText, agentName || "default", serverParts);
 
       } catch (err) {
         document.getElementById("coldBanner").classList.remove("show");
@@ -975,7 +977,7 @@
     // ─── Add bot message + quick reply chips ───
     // renderRichMessage() returns Part[] — each Part becomes its own .bubble.
     // Agent badge appears only on the first non-empty bubble.
-    function addBotMessage(text, agent) {
+    function addBotMessage(text, agent, serverParts) {
       const row = document.createElement("div");
       row.className = "msg-row bot";
 
@@ -984,7 +986,10 @@
                          agent === "profile" ? "PROFILE"   :
                          agent === "room"    ? "ROOMS"     : "ASSISTANT";
 
-      const parts = renderRichMessage(text, agent); // always returns Part[]
+      // Prefer server-parsed parts (structured output) over client-side regex
+      const parts = (serverParts && serverParts.length)
+        ? (renderFromServerParts(serverParts) || renderRichMessage(text, agent))
+        : renderRichMessage(text, agent);
 
       // Helper: create one .bubble, wire its [data-action] buttons
       function makeBubble(html, showBadge) {
@@ -1028,6 +1033,86 @@
       scrollToBottom();
       chatHistory.push({ role: "bot", text, agent, time: timeNow() });
       saveChatHistory();
+    }
+
+    // ─── Render from Server Parts (structured output contract) ───
+    // Converts server-parsed parts[] into the same [{html}] format
+    // that renderRichMessage() returns, reusing existing card builders.
+    function renderFromServerParts(serverParts) {
+      const priceRe = /(₹[\d,]+(?:\s*(?:\/\s*(?:month|mo|day)))?)/g;
+      const htmlParts = [];
+
+      for (const part of serverParts) {
+        if (part.type === "text") {
+          let h = marked.parse(part.markdown || "");
+          h = h.replace(priceRe, '<span class="price-inline">$1</span>');
+          if (h.trim()) htmlParts.push({ html: `<div class="msg-content">${h}</div>` });
+
+        } else if (part.type === "property_carousel") {
+          const props = (part.properties || []).map((p, i) => ({
+            num: i + 1,
+            name: p.name || "",
+            price: p.rent || "",
+            location: p.location || "",
+            gender: p.gender || "",
+            distance: p.distance || "",
+            image: p.image || "",
+            link: p.link || "",
+          }));
+          if (!props.length) continue;
+
+          const isSingle = props.length === 1;
+          const cardsHtml = props.map(p => buildPropertyCardHtml(p, isSingle)).join('');
+          const cid = ++_carouselSeq;
+
+          let carouselHtml;
+          if (isSingle) {
+            carouselHtml = `<div style="margin:8px 0 4px">${cardsHtml}</div>`;
+          } else {
+            carouselHtml = `
+              <div class="carousel-wrapper">
+                <span class="carousel-counter" id="cc${cid}">1 / ${props.length}</span>
+                <div class="property-carousel" id="pc${cid}" data-total="${props.length}">${cardsHtml}</div>
+              </div>
+              <span class="carousel-view-all" data-action="Show me all ${props.length} properties">View all ${props.length} →</span>
+            `;
+          }
+          htmlParts.push({ html: carouselHtml });
+
+        } else if (part.type === "comparison_table") {
+          const headers = part.headers || [];
+          const rows = part.rows || [];
+          if (headers.length < 2 || rows.length < 1) continue;
+
+          const renderCell = t => marked.parseInline ? marked.parseInline(t) : escapeHtml(t);
+          const colHeaders = headers.map(h => `<th>${renderCell(h)}</th>`).join('');
+          const bodyHtml = rows.map(row => {
+            const cells = row.map(c => {
+              const lc = (c || "").toLowerCase();
+              let cls = '';
+              if (['✓','yes','✅','✔'].includes(lc)) { cls = 'cmp-yes'; c = '✓'; }
+              if (['—','-','no','❌','✗'].includes(lc)) { cls = 'cmp-no'; c = '—'; }
+              return `<td class="${cls}">${cls ? escapeHtml(c) : renderCell(c)}</td>`;
+            }).join('');
+            return `<tr>${cells}</tr>`;
+          }).join('');
+
+          const winnerHtml = part.winner
+            ? `<div class="compare-winner">🏆 ${escapeHtml(part.winner)}</div>`
+            : '';
+
+          htmlParts.push({ html: `<div class="compare-card">
+            <div class="compare-card-header">⚖ Comparison</div>
+            <table class="compare-tbl">
+              <thead><tr>${colHeaders}</tr></thead>
+              <tbody>${bodyHtml}</tbody>
+            </table>
+            ${winnerHtml}
+          </div>` });
+        }
+      }
+
+      return htmlParts.length ? htmlParts : null;
     }
 
     // ─── Rich Message Renderer ───

@@ -13,6 +13,9 @@
     },
     "api/language.js": {
       "maxDuration": 10
+    },
+    "api/deepgram-token.js": {
+      "maxDuration": 10
     }
   }
 }

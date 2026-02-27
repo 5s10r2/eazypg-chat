@@ -1,35 +1,18 @@
-// ─── Voice Input (Web Speech API) ───
+// ─── Voice Input (Deepgram Nova-3 WebSocket) ───
 import { currentLocale } from './i18n.js';
 import { isWaiting } from './config.js';
 import { autoGrow } from './helpers.js';
 
 // ─── State ───
-let recognition = null;
+let mediaRecorder = null;
+let socket = null;
+let stream = null;
 let shouldBeRecording = false;
 let finalTranscript = '';
-let interimTranscript = '';
-let restartCount = 0;
-let lastError = null;
-let errorCount = 0;
 let savedPlaceholder = '';
-let gotAnyResult = false;
 
-const MAX_RESTARTS = 10;
-const MAX_ERROR_RESTARTS = 3;
-
-// ─── Locale → BCP-47 mapping ───
-const LOCALE_MAP = {
-  en: 'en-IN',
-  hi: 'hi-IN',
-  mr: 'mr-IN',
-};
-
-// ─── Fatal errors (stop completely, no restart) ───
-const FATAL_ERRORS = new Set([
-  'not-allowed',
-  'service-not-allowed',
-  'language-not-supported',
-]);
+// ─── Locale → Deepgram language code ───
+const LOCALE_MAP = { en: 'en', hi: 'hi', mr: 'mr' };
 
 // ─── UI Helpers ───
 function getMic() { return document.getElementById('micBtn'); }
@@ -38,11 +21,8 @@ function getInput() { return document.getElementById('msgInput'); }
 function setRecordingUI(on) {
   const micBtn = getMic();
   if (!micBtn) return;
-  if (on) {
-    micBtn.classList.add('recording');
-  } else {
-    micBtn.classList.remove('recording');
-  }
+  if (on) micBtn.classList.add('recording');
+  else micBtn.classList.remove('recording');
 }
 
 function setPlaceholder(text) {
@@ -55,17 +35,34 @@ function restorePlaceholder() {
   if (el) el.placeholder = savedPlaceholder || 'Message OxOtel…';
 }
 
-// ─── Stop everything cleanly ───
+// ─── Clean up everything ───
 function fullStop(reason) {
   console.log('[Voice] fullStop:', reason);
   shouldBeRecording = false;
-  restartCount = 0;
-  errorCount = 0;
-  lastError = null;
-  gotAnyResult = false;
   setRecordingUI(false);
-  restorePlaceholder();
 
+  // Stop MediaRecorder
+  if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+    try { mediaRecorder.stop(); } catch (e) { /* ignore */ }
+  }
+  mediaRecorder = null;
+
+  // Close WebSocket
+  if (socket && socket.readyState <= WebSocket.OPEN) {
+    try {
+      socket.send(JSON.stringify({ type: 'CloseStream' }));
+      socket.close();
+    } catch (e) { /* ignore */ }
+  }
+  socket = null;
+
+  // Release mic stream
+  if (stream) {
+    stream.getTracks().forEach(t => t.stop());
+    stream = null;
+  }
+
+  // Put final transcript in textarea
   const msgInput = getInput();
   if (msgInput) {
     if (finalTranscript.trim()) {
@@ -74,173 +71,168 @@ function fullStop(reason) {
     autoGrow(msgInput);
     msgInput.focus();
   }
+
+  restorePlaceholder();
 }
 
 // ─── Initialize ───
 export function initVoiceInput() {
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   const micBtn = getMic();
   if (!micBtn) return;
 
-  if (!SpeechRecognition) {
+  // Check if browser supports MediaRecorder + getUserMedia
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || !window.MediaRecorder) {
     micBtn.style.display = 'none';
-    console.warn('[Voice] Web Speech API not supported in this browser');
+    console.warn('[Voice] MediaRecorder not supported in this browser');
     return;
   }
 
   // Save original placeholder
   const msgInput = getInput();
   if (msgInput) savedPlaceholder = msgInput.placeholder;
-
-  recognition = new SpeechRecognition();
-  recognition.continuous = true;
-  recognition.interimResults = true;
-  recognition.lang = LOCALE_MAP[currentLocale] || 'en-IN';
-  recognition.maxAlternatives = 1;
-
-  // ── Result handler: live transcription into textarea ──
-  recognition.onresult = (event) => {
-    restartCount = 0;
-    errorCount = 0;
-    lastError = null;
-    gotAnyResult = true;
-
-    interimTranscript = '';
-    for (let i = event.resultIndex; i < event.results.length; i++) {
-      const transcript = event.results[i][0].transcript;
-      if (event.results[i].isFinal) {
-        finalTranscript += transcript;
-      } else {
-        interimTranscript = transcript;
-      }
-    }
-    const el = getInput();
-    if (el) {
-      el.value = finalTranscript + interimTranscript;
-      autoGrow(el);
-    }
-    console.log('[Voice] result:', (finalTranscript + interimTranscript).slice(-60));
-  };
-
-  // ── Error handler ──
-  recognition.onerror = (event) => {
-    lastError = event.error;
-    console.warn('[Voice] onerror:', event.error, event.message || '');
-
-    if (FATAL_ERRORS.has(event.error)) {
-      if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
-        setPlaceholder('⚠️ Mic permission denied — allow in browser settings');
-        micBtn.style.display = 'none';
-      }
-      fullStop('fatal: ' + event.error);
-      return;
-    }
-
-    // Non-fatal — onerror always fires before onend.
-    // We let onend decide whether to restart based on errorCount.
-    errorCount++;
-  };
-
-  // ── End handler ──
-  recognition.onend = () => {
-    console.log('[Voice] onend — shouldBe:', shouldBeRecording,
-      'lastErr:', lastError, 'errCount:', errorCount, 'restarts:', restartCount);
-
-    if (!shouldBeRecording) {
-      // User explicitly stopped — finalize cleanly
-      fullStop('user-stopped');
-      return;
-    }
-
-    // Should still be recording — decide whether to restart
-    if (lastError && errorCount > MAX_ERROR_RESTARTS) {
-      // Too many consecutive errors — stop and tell the user
-      const tip = lastError === 'no-speech'
-        ? '🎙️ No speech detected — tap mic & try again'
-        : lastError === 'network'
-          ? '⚠️ Network error — check internet & try again'
-          : lastError === 'audio-capture'
-            ? '⚠️ Mic not found — check mic is connected'
-            : '⚠️ Voice error: ' + lastError;
-      setPlaceholder(tip);
-      fullStop('too-many-errors: ' + lastError);
-      return;
-    }
-
-    if (restartCount >= MAX_RESTARTS) {
-      fullStop('max-restarts');
-      return;
-    }
-
-    // Auto-restart (Chrome premature onend workaround)
-    restartCount++;
-    lastError = null;
-    try {
-      recognition.start();
-      console.log('[Voice] auto-restarted (' + restartCount + ')');
-    } catch (e) {
-      console.warn('[Voice] restart failed:', e.message);
-      fullStop('restart-exception');
-    }
-  };
-
-  // ── Audio confirmed flowing from mic ──
-  recognition.onaudiostart = () => {
-    console.log('[Voice] ✓ audio stream active');
-    restartCount = 0;
-    errorCount = 0;
-    lastError = null;
-    setPlaceholder('🎙️ Listening… speak now');
-  };
-
-  // ── Speech detected in audio ──
-  recognition.onspeechstart = () => {
-    console.log('[Voice] ✓ speech detected');
-    setPlaceholder('🎙️ Hearing you…');
-  };
-
-  // ── Speech stopped ──
-  recognition.onspeechend = () => {
-    console.log('[Voice] speech ended');
-  };
 }
 
 // ─── Toggle recording on / off ───
-export function toggleVoiceInput() {
-  if (!recognition) return;
+export async function toggleVoiceInput() {
+  if (!navigator.mediaDevices) return;
   if (isWaiting) return;
 
   if (shouldBeRecording) {
     // User wants to stop
     shouldBeRecording = false;
-    recognition.stop();    // fires onend → fullStop
+    fullStop('user-stopped');
     return;
   }
 
   // User wants to start
   const msgInput = getInput();
-  recognition.lang = LOCALE_MAP[currentLocale] || 'en-IN';
+  const lang = LOCALE_MAP[currentLocale] || 'en';
 
   // Preserve existing text
   const existing = msgInput ? msgInput.value.trim() : '';
   finalTranscript = existing ? existing + ' ' : '';
-  interimTranscript = '';
-  restartCount = 0;
-  errorCount = 0;
-  lastError = null;
-  gotAnyResult = false;
+
+  shouldBeRecording = true;
+  setRecordingUI(true);
+  setPlaceholder('🎙️ Starting mic…');
+  console.log('[Voice] starting — lang:', lang);
 
   try {
-    recognition.start();
-    shouldBeRecording = true;
-    setRecordingUI(true);
-    setPlaceholder('🎙️ Starting mic…');
-    console.log('[Voice] started — lang:', recognition.lang);
-  } catch (e) {
-    console.warn('[Voice] start failed:', e.message);
-    shouldBeRecording = false;
-    setRecordingUI(false);
+    // Step 1: Get temporary token from our serverless function
+    const tokenRes = await fetch('/api/deepgram-token');
+    if (!tokenRes.ok) {
+      const errData = await tokenRes.json().catch(() => ({}));
+      console.error('[Voice] token fetch failed:', tokenRes.status, errData);
+      setPlaceholder('⚠️ Could not start mic — try again');
+      setTimeout(restorePlaceholder, 3000);
+      fullStop('token-fetch-failed');
+      return;
+    }
+    const { token } = await tokenRes.json();
+    if (!token) {
+      setPlaceholder('⚠️ Could not start mic — try again');
+      setTimeout(restorePlaceholder, 3000);
+      fullStop('no-token');
+      return;
+    }
+
+    // Step 2: Open WebSocket to Deepgram
+    const wsUrl = `wss://api.deepgram.com/v1/listen?model=nova-3&language=${lang}&interim_results=true&smart_format=true&punctuate=true&encoding=opus&sample_rate=48000`;
+    socket = new WebSocket(wsUrl, ['token', token]);
+
+    socket.onopen = async () => {
+      console.log('[Voice] WebSocket connected');
+      setPlaceholder('🎙️ Listening… speak now');
+
+      try {
+        // Step 3: Get mic access
+        stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+        // Step 4: Create MediaRecorder
+        // Try opus first (Chrome/Firefox), fall back to whatever is available
+        let mimeType = 'audio/webm;codecs=opus';
+        if (!MediaRecorder.isTypeSupported(mimeType)) {
+          mimeType = 'audio/webm';
+          if (!MediaRecorder.isTypeSupported(mimeType)) {
+            mimeType = ''; // let browser decide
+          }
+        }
+
+        mediaRecorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+
+        mediaRecorder.ondataavailable = (event) => {
+          if (event.data.size > 0 && socket && socket.readyState === WebSocket.OPEN) {
+            socket.send(event.data);
+          }
+        };
+
+        mediaRecorder.onstop = () => {
+          console.log('[Voice] MediaRecorder stopped');
+        };
+
+        // Start sending 250ms audio chunks
+        mediaRecorder.start(250);
+        console.log('[Voice] MediaRecorder started, mimeType:', mediaRecorder.mimeType);
+
+      } catch (micErr) {
+        console.error('[Voice] getUserMedia failed:', micErr);
+        if (micErr.name === 'NotAllowedError' || micErr.name === 'PermissionDeniedError') {
+          setPlaceholder('⚠️ Mic permission denied — allow in browser settings');
+          const micBtn = getMic();
+          if (micBtn) micBtn.style.display = 'none';
+        } else {
+          setPlaceholder('⚠️ Mic not found — check mic is connected');
+          setTimeout(restorePlaceholder, 3000);
+        }
+        fullStop('mic-error: ' + micErr.name);
+      }
+    };
+
+    socket.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        if (data.type === 'Results') {
+          const transcript = data.channel?.alternatives?.[0]?.transcript || '';
+          if (transcript) {
+            if (data.is_final) {
+              finalTranscript += transcript + ' ';
+              setPlaceholder('🎙️ Hearing you…');
+            }
+            // Show live text (final + current interim)
+            const el = getInput();
+            if (el) {
+              el.value = data.is_final
+                ? finalTranscript
+                : finalTranscript + transcript;
+              autoGrow(el);
+            }
+            console.log('[Voice] transcript:', transcript.slice(-60), data.is_final ? '(final)' : '(interim)');
+          }
+        }
+      } catch (e) {
+        console.warn('[Voice] message parse error:', e);
+      }
+    };
+
+    socket.onerror = (event) => {
+      console.error('[Voice] WebSocket error:', event);
+      setPlaceholder('⚠️ Network error — try again');
+      setTimeout(restorePlaceholder, 3000);
+      fullStop('ws-error');
+    };
+
+    socket.onclose = (event) => {
+      console.log('[Voice] WebSocket closed:', event.code, event.reason);
+      if (shouldBeRecording) {
+        // Unexpected close
+        fullStop('ws-closed-unexpectedly');
+      }
+    };
+
+  } catch (err) {
+    console.error('[Voice] start failed:', err);
     setPlaceholder('⚠️ Could not start mic — try again');
     setTimeout(restorePlaceholder, 3000);
+    fullStop('start-exception');
   }
 }

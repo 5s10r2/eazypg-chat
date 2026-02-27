@@ -5,9 +5,11 @@ import { autoGrow } from './helpers.js';
 
 // ─── State ───
 let recognition = null;
-let isRecording = false;
+let shouldBeRecording = false;   // true while user wants mic on
 let finalTranscript = '';
 let interimTranscript = '';
+let restartCount = 0;
+const MAX_RESTARTS = 8;          // prevent infinite restart loops
 
 // ─── Locale → BCP-47 mapping ───
 const LOCALE_MAP = {
@@ -16,11 +18,22 @@ const LOCALE_MAP = {
   mr: 'mr-IN',
 };
 
+// ─── Fatal errors (stop completely) ───
+const FATAL_ERRORS = new Set([
+  'not-allowed',
+  'service-not-allowed',
+  'language-not-supported',
+]);
+
 // ─── Helpers ───
-function stopRecordingUI() {
-  isRecording = false;
+function setRecordingUI(on) {
   const micBtn = document.getElementById('micBtn');
-  if (micBtn) micBtn.classList.remove('recording');
+  if (!micBtn) return;
+  if (on) {
+    micBtn.classList.add('recording');
+  } else {
+    micBtn.classList.remove('recording');
+  }
 }
 
 // ─── Initialize ───
@@ -38,9 +51,11 @@ export function initVoiceInput() {
   recognition.continuous = true;
   recognition.interimResults = true;
   recognition.lang = LOCALE_MAP[currentLocale] || 'en-IN';
+  recognition.maxAlternatives = 1;
 
-  // ── Result handler: update textarea with live transcription ──
+  // ── Result handler: live transcription into textarea ──
   recognition.onresult = (event) => {
+    restartCount = 0;                // healthy — reset restart counter
     interimTranscript = '';
     for (let i = event.resultIndex; i < event.results.length; i++) {
       const transcript = event.results[i][0].transcript;
@@ -59,17 +74,44 @@ export function initVoiceInput() {
 
   // ── Error handler ──
   recognition.onerror = (event) => {
-    if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
-      // Microphone permission denied — hide button permanently
-      micBtn.style.display = 'none';
+    console.warn('[Voice] error:', event.error, event.message || '');
+
+    if (FATAL_ERRORS.has(event.error)) {
+      // Permission denied or service blocked — stop completely
+      shouldBeRecording = false;
+      setRecordingUI(false);
+      if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+        micBtn.style.display = 'none';
+      }
+      return;
     }
-    // For 'no-speech', 'network', 'aborted' — just stop cleanly
-    stopRecordingUI();
+
+    // Non-fatal errors (no-speech, network, aborted, audio-capture):
+    // Let onend handle restart logic — don't kill shouldBeRecording
   };
 
-  // ── End handler: finalize text, focus input ──
+  // ── End handler: auto-restart if user hasn't stopped ──
   recognition.onend = () => {
-    stopRecordingUI();
+    console.log('[Voice] onend — shouldBeRecording:', shouldBeRecording, 'restarts:', restartCount);
+
+    if (shouldBeRecording && restartCount < MAX_RESTARTS) {
+      // Chrome fires onend prematurely even with continuous=true
+      // Auto-restart so the user can keep speaking
+      restartCount++;
+      try {
+        recognition.start();
+        console.log('[Voice] auto-restarted (' + restartCount + ')');
+        return;               // keep recording UI red
+      } catch (e) {
+        console.warn('[Voice] restart failed:', e.message);
+      }
+    }
+
+    // Truly done — finalize
+    shouldBeRecording = false;
+    restartCount = 0;
+    setRecordingUI(false);
+
     const msgInput = document.getElementById('msgInput');
     if (msgInput) {
       msgInput.value = finalTranscript;
@@ -77,37 +119,44 @@ export function initVoiceInput() {
       msgInput.focus();
     }
   };
+
+  // ── Audio-start handler: confirm mic is active ──
+  recognition.onaudiostart = () => {
+    console.log('[Voice] audio stream started — mic is live');
+    restartCount = 0;
+  };
 }
 
-// ─── Toggle recording on/off ───
+// ─── Toggle recording on / off ───
 export function toggleVoiceInput() {
   if (!recognition) return;
   if (isWaiting) return;
 
-  if (isRecording) {
-    // Stop recording
-    recognition.stop();
+  if (shouldBeRecording) {
+    // User wants to stop
+    shouldBeRecording = false;
+    recognition.stop();            // fires onend → finalizes
     return;
   }
 
-  // Start recording
+  // User wants to start
   const msgInput = document.getElementById('msgInput');
-  const micBtn = document.getElementById('micBtn');
-
-  // Sync language with current locale
   recognition.lang = LOCALE_MAP[currentLocale] || 'en-IN';
 
-  // Preserve any existing text in textarea
+  // Preserve existing text in textarea
   const existing = msgInput ? msgInput.value.trim() : '';
   finalTranscript = existing ? existing + ' ' : '';
   interimTranscript = '';
+  restartCount = 0;
 
   try {
     recognition.start();
-    isRecording = true;
-    if (micBtn) micBtn.classList.add('recording');
+    shouldBeRecording = true;
+    setRecordingUI(true);
+    console.log('[Voice] started — lang:', recognition.lang);
   } catch (e) {
-    // DOMException if already started — ignore
-    stopRecordingUI();
+    console.warn('[Voice] start failed:', e.message);
+    shouldBeRecording = false;
+    setRecordingUI(false);
   }
 }

@@ -40,3 +40,28 @@
 .send-btn:hover { opacity: 0.82; transform: scale(1.04); }
 .send-btn:disabled { background: #cbd5e1; cursor: not-allowed; transform: none; opacity: 1; }
 .send-btn svg { width: 18px; height: 18px; fill: #fff; }
+
+/* ─── Mic Button ─── */
+.mic-btn {
+  width: 42px; height: 42px; border-radius: 50%;
+  background: transparent;
+  border: 1.5px solid var(--border);
+  color: var(--text-light);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  transition: color 0.14s, border-color 0.14s, background 0.14s, transform 0.14s;
+}
+.mic-btn:hover { color: var(--text); border-color: #94a3b8; transform: scale(1.04); }
+.mic-btn:disabled { color: #cbd5e1; border-color: #e2e8f0; cursor: not-allowed; transform: none; }
+.mic-btn svg { width: 18px; height: 18px; }
+
+/* Recording state — red with pulse */
+.mic-btn.recording {
+  background: #fee2e2; border-color: #ef4444; color: #ef4444;
+  animation: micPulse 1.4s ease-in-out infinite;
+}
+@keyframes micPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.4); }
+  50%      { box-shadow: 0 0 0 8px rgba(239,68,68,0); }
+}

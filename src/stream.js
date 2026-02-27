@@ -28,6 +28,8 @@ export async function sendMessage() {
 
   setIsWaiting(true);
   sendBtn.disabled = true;
+  const micBtn = document.getElementById('micBtn');
+  if (micBtn) micBtn.disabled = true;
 
   if (firstRequest) {
     document.getElementById("coldBanner").classList.add("show");
@@ -62,6 +64,7 @@ export async function sendMessage() {
       addBotMessage(t("rate_limit", { seconds: wait }), "system");
       setIsWaiting(false);
       sendBtn.disabled = false;
+      if (micBtn) micBtn.disabled = false;
       return;
     }
     if (!res.ok) throw new Error(`Server error: ${res.status}`);
@@ -159,6 +162,8 @@ export async function sendMessage() {
   } finally {
     setIsWaiting(false);
     sendBtn.disabled = false;
+    const micBtnF = document.getElementById('micBtn');
+    if (micBtnF) micBtnF.disabled = false;
     msgInput.focus();
   }
 }

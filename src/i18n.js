@@ -27,7 +27,7 @@ export const TRANSLATIONS = {
     btn_details: "Details", btn_book_visit: "Book Visit →", btn_microsite: "Microsite ↗",
     comparison_header: "⚖ Comparison",
     view_all: "View all {count} →",
-    map_view: "Map View", map_hide: "Hide Map",
+    map_view: "Map View", map_hide: "Hide Map", mic_tooltip: "Voice input",
     chip_details: "📋 Details", chip_book_visit: "📅 Book a Visit",
     chip_shortlist: "❤️ Shortlist", chip_compare_top2: "⚖️ Compare top 2",
     chip_see_rooms: "🛏️ See Rooms", chip_images: "📸 Images",
@@ -56,7 +56,7 @@ export const TRANSLATIONS = {
     btn_details: "विवरण", btn_book_visit: "विज़िट बुक करें →", btn_microsite: "माइक्रोसाइट ↗",
     comparison_header: "⚖ तुलना",
     view_all: "सभी {count} देखें →",
-    map_view: "मैप व्यू", map_hide: "मैप छुपाएं",
+    map_view: "मैप व्यू", map_hide: "मैप छुपाएं", mic_tooltip: "वॉइस इनपुट",
     chip_details: "📋 विवरण", chip_book_visit: "📅 विज़िट बुक करें",
     chip_shortlist: "❤️ शॉर्टलिस्ट", chip_compare_top2: "⚖️ टॉप 2 की तुलना",
     chip_see_rooms: "🛏️ कमरे देखें", chip_images: "📸 फ़ोटो",
@@ -85,7 +85,7 @@ export const TRANSLATIONS = {
     btn_details: "तपशील", btn_book_visit: "भेट बुक करा →", btn_microsite: "मायक्रोसाइट ↗",
     comparison_header: "⚖ तुलना",
     view_all: "सर्व {count} पहा →",
-    map_view: "नकाशा पहा", map_hide: "नकाशा लपवा",
+    map_view: "नकाशा पहा", map_hide: "नकाशा लपवा", mic_tooltip: "व्हॉइस इनपुट",
     chip_details: "📋 तपशील", chip_book_visit: "📅 भेट बुक करा",
     chip_shortlist: "❤️ शॉर्टलिस्ट", chip_compare_top2: "⚖️ टॉप 2 ची तुलना",
     chip_see_rooms: "🛏️ रूम्स पहा", chip_images: "📸 फोटो",
@@ -150,6 +150,8 @@ export function updateUIStrings() {
   if (coldSpan) coldSpan.textContent = t("cold_banner");
   const msgInput = document.getElementById("msgInput");
   if (msgInput) msgInput.placeholder = t("input_placeholder");
+  const micBtn = document.getElementById("micBtn");
+  if (micBtn) micBtn.title = t("mic_tooltip");
   const wc = document.getElementById("welcomeCard");
   if (wc) wc.innerHTML = buildWelcomeInnerHtml();
 }

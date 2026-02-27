@@ -18,6 +18,7 @@ import { TRANSLATIONS, currentLocale, setCurrentLocale, setLocale, updateUIStrin
 import { autoGrow } from './helpers.js';
 import { loadChatHistory, clearChat } from './chat-history.js';
 import { sendMessage, sendQuick } from './stream.js';
+import { initVoiceInput, toggleVoiceInput } from './voice-input.js';
 
 // ─── Configure marked.js ───
 marked.setOptions({ breaks: true, gfm: true, headerIds: false, mangle: false });
@@ -28,6 +29,7 @@ window.sendQuick   = sendQuick;
 window.clearChat   = clearChat;
 window.setLocale   = setLocale;
 window.autoGrow    = autoGrow;
+window.toggleVoiceInput = toggleVoiceInput;
 
 // ─── Carousel scroll counter sync ───
 document.addEventListener("scroll", function(e) {
@@ -53,5 +55,6 @@ window.addEventListener("load", () => {
     updateUIStrings();
   }
   loadChatHistory();
+  initVoiceInput();
   document.getElementById("msgInput").focus();
 });

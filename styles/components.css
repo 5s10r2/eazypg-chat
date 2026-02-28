@@ -1,26 +1,31 @@
 /* ─── Quick Reply Chips ─── */
 .quick-replies {
   display: flex; flex-wrap: wrap; gap: 7px;
-  padding: 7px 0 10px;
+  padding: 8px 0 10px;
   max-width: min(520px, 88%);
 }
 .qr-chip {
   border: 1px solid var(--border);
   border-radius: 9999px;
   background: #ffffff; color: var(--text);
-  height: 32px; padding: 0 14px;
+  height: 34px; padding: 0 15px;
   font-size: 12.5px; font-weight: 500;
   cursor: pointer; font-family: var(--font);
   display: inline-flex; align-items: center; gap: 5px;
-  transition: background 0.12s, border-color 0.12s, box-shadow 0.12s;
+  transition: all 0.15s ease;
   white-space: nowrap;
 }
 .qr-chip:hover {
   background: #f8fafc;
   border-color: #94a3b8;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  transform: translateY(-1px);
 }
-.qr-chip:active { background: #f1f5f9; transform: scale(0.96); }
+.qr-chip:active {
+  background: #f1f5f9;
+  transform: scale(0.97) translateY(0);
+  box-shadow: none;
+}
 
 /* ─── Action Buttons (backend-controlled) ─── */
 .action-buttons {
@@ -34,7 +39,7 @@
   font-size: 13px; font-weight: 600;
   cursor: pointer; font-family: var(--font);
   display: inline-flex; align-items: center; gap: 6px;
-  transition: background 0.15s, border-color 0.15s, box-shadow 0.15s, transform 0.1s;
+  transition: all 0.15s ease;
   white-space: nowrap;
 }
 .action-btn-primary {
@@ -44,8 +49,9 @@
 .action-btn-primary:hover {
   background: #005bcc;
   box-shadow: 0 2px 8px rgba(0,112,243,0.25);
+  transform: translateY(-1px);
 }
-.action-btn-primary:active { transform: scale(0.97); }
+.action-btn-primary:active { transform: scale(0.97) translateY(0); }
 .action-btn-secondary {
   background: #fff; color: var(--text);
   border: 1px solid var(--border);
@@ -54,8 +60,12 @@
   background: #f8fafc;
   border-color: #94a3b8;
   box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  transform: translateY(-1px);
 }
-.action-btn-secondary:active { background: #f1f5f9; transform: scale(0.97); }
+.action-btn-secondary:active {
+  background: #f1f5f9;
+  transform: scale(0.97) translateY(0);
+}
 
 /* ─── Feedback Buttons ─── */
 .feedback-row {
@@ -63,10 +73,14 @@
 }
 .feedback-btn {
   background: none; border: 1px solid transparent; border-radius: 6px;
-  cursor: pointer; padding: 3px 6px; font-size: 14px; opacity: 0.45;
-  transition: opacity 0.15s, background 0.15s, border-color 0.15s;
+  cursor: pointer; padding: 3px 6px; font-size: 14px; opacity: 0.40;
+  transition: all 0.15s ease;
 }
-.feedback-btn:hover { opacity: 1; background: #f1f5f9; border-color: var(--border); }
+.feedback-btn:hover {
+  opacity: 1; background: #f1f5f9; border-color: var(--border);
+  transform: scale(1.08);
+}
+.feedback-btn:active { transform: scale(0.95); }
 .feedback-btn.selected { opacity: 1; border-color: var(--accent); background: #eff6ff; }
 
 /* ─── Typing Indicator ─── */
@@ -76,8 +90,8 @@
   border: 1px solid var(--border);
   border-radius: var(--radius);
   border-bottom-left-radius: 3px;
-  padding: 12px 16px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  padding: 14px 18px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
   display: flex; gap: 5px; align-items: center;
 }
 .typing-dot {
@@ -128,7 +142,7 @@
 .welcome-title {
   font-size: 22px; font-weight: 700;
   color: var(--text); margin-bottom: 5px;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.025em;
 }
 .welcome-subtitle {
   font-size: 13.5px; color: var(--text-light);
@@ -142,23 +156,25 @@
 .quick-action {
   background: #fff;
   border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 12px 14px;
+  border-radius: 12px;
+  padding: 14px 14px;
   font-size: 13px; font-weight: 500;
   color: var(--text);
   cursor: pointer; text-align: left;
   line-height: 1.4; font-family: var(--font);
-  transition: background 0.12s, border-color 0.12s, box-shadow 0.12s;
+  transition: all 0.15s ease;
 }
 .quick-action:hover {
   background: #f8fafc;
   border-color: #94a3b8;
   box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  transform: translateY(-1px);
 }
+.quick-action:active { transform: scale(0.98) translateY(0); }
 .quick-action .qa-label {
   display: block;
   font-size: 11px; color: var(--text-lighter);
-  font-weight: 400; margin-top: 3px;
+  font-weight: 400; margin-top: 4px;
 }
 
 /* ─── Cold Start Banner ─── */

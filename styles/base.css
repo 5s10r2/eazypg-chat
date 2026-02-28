@@ -16,6 +16,11 @@
   --cta-ghost-bg: #ffffff;
   --radius:       10px;
   --radius-sm:    6px;
+  --radius-lg:    14px;
+  --shadow-sm:    0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.02);
+  --shadow-md:    0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
+  --shadow-lg:    0 8px 24px rgba(0,0,0,0.10), 0 2px 8px rgba(0,0,0,0.04);
+  --ease-out:     cubic-bezier(0.22, 1, 0.36, 1);
   --font:         'Geist', 'Inter', -apple-system, system-ui, sans-serif;
 }
 
@@ -42,5 +47,4 @@ body {
 }
 @media (max-width: 360px) {
   .bubble { max-width: 93%; font-size: 13.5px; }
-  .property-card { min-width: 240px; max-width: 240px; }
 }

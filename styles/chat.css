@@ -7,13 +7,14 @@
   scroll-behavior: smooth;
 }
 .chat-area::-webkit-scrollbar { width: 5px; }
-.chat-area::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.11); border-radius: 3px; }
+.chat-area::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.08); border-radius: 3px; }
+.chat-area::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.14); }
 
 /* ─── Message Rows ─── */
 .msg-row {
   display: flex;
   margin-bottom: 2px;
-  animation: msgIn 0.22s ease;
+  animation: msgIn 0.28s cubic-bezier(0.22, 1, 0.36, 1);
 }
 .msg-row.user { justify-content: flex-end; }
 .msg-row.bot  { flex-direction: column; align-items: flex-start; gap: 4px; }
@@ -21,14 +22,14 @@
 .msg-row.bot  + .msg-row.user { margin-top: 10px; }
 
 @keyframes msgIn {
-  from { opacity: 0; transform: translateY(6px); }
+  from { opacity: 0; transform: translateY(8px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
 /* ─── Bubbles ─── */
 .bubble {
   max-width: min(520px, 88%);
-  padding: 10px 14px;
+  padding: 11px 14px;
   border-radius: var(--radius);
   position: relative;
   line-height: 1.6;
@@ -44,7 +45,7 @@
   background: var(--bot-bubble);
   border: 1px solid var(--border);
   border-bottom-left-radius: 3px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.02);
 }
 .bubble .time {
   font-size: 10.5px;
@@ -58,11 +59,19 @@
 .bot .bubble p { margin: 0 0 7px; }
 .bot .bubble p:last-child { margin-bottom: 0; }
 .bot .bubble strong { font-weight: 600; color: var(--text); }
-.bot .bubble em { color: var(--text-light); }
-.bot .bubble ul, .bot .bubble ol { padding-left: 16px; margin: 5px 0; }
-.bot .bubble li { margin: 2px 0; }
-.bot .bubble a { color: var(--accent); text-decoration: underline; text-decoration-color: rgba(0,112,243,0.28); }
-.bot .bubble hr { border: none; border-top: 1px solid var(--border); margin: 8px 0; }
+.bot .bubble em { color: var(--text-light); font-style: italic; }
+.bot .bubble ul, .bot .bubble ol { padding-left: 18px; margin: 6px 0; }
+.bot .bubble li { margin: 3px 0; line-height: 1.5; }
+.bot .bubble li::marker { color: var(--text-lighter); }
+.bot .bubble a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-decoration-color: rgba(0,112,243,0.25);
+  text-underline-offset: 2px;
+  transition: text-decoration-color 0.12s;
+}
+.bot .bubble a:hover { text-decoration-color: var(--accent); }
+.bot .bubble hr { border: none; border-top: 1px solid var(--border); margin: 10px 0; }
 /* Demote any stray markdown headers to body text size */
 .bot .bubble h1, .bot .bubble h2, .bot .bubble h3,
 .bot .bubble h4, .bot .bubble h5, .bot .bubble h6 {
@@ -71,10 +80,12 @@
 
 /* ─── Agent Badge ─── */
 .agent-badge {
-  display: block;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   font-size: 10px;
   text-transform: uppercase;
-  letter-spacing: 0.07em;
+  letter-spacing: 0.06em;
   color: var(--text-lighter);
   font-weight: 500;
   margin-bottom: 4px;
@@ -82,7 +93,10 @@
 }
 
 /* ─── Price inline highlight ─── */
-.price-inline { font-weight: 700; }
+.price-inline {
+  font-weight: 700;
+  color: var(--text);
+}
 
 /* ─── CTA Buttons (inline, legacy) ─── */
 .cta-row { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 10px; }
@@ -90,13 +104,17 @@
   display: inline-flex; align-items: center; gap: 5px;
   background: var(--cta-dark); color: #fff;
   border: none; padding: 7px 14px;
-  border-radius: var(--radius-sm);
-  font-size: 12.5px; font-weight: 500;
-  cursor: pointer; transition: opacity 0.14s;
+  border-radius: 8px;
+  font-size: 12.5px; font-weight: 600;
+  cursor: pointer; transition: all 0.15s ease;
   font-family: var(--font); letter-spacing: 0.01em;
 }
-.cta-btn:hover { opacity: 0.80; }
+.cta-btn:hover { background: #1e293b; box-shadow: 0 2px 6px rgba(15,23,42,0.15); }
+.cta-btn:active { transform: scale(0.97); }
 .cta-btn.secondary {
-  background: var(--cta-ghost-bg);
+  background: #fff;
   color: var(--text); border: 1px solid var(--border);
+}
+.cta-btn.secondary:hover {
+  background: #f8fafc; border-color: #94a3b8;
 }

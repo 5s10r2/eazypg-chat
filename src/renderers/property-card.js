@@ -3,13 +3,22 @@ import { escapeHtml, escapeAttr } from '../helpers.js';
 import { t } from '../i18n.js';
 
 export function buildPropertyCardHtml(p, isSingle) {
-  const imgContent = p.image
+  const imgTag = p.image
     ? `<img class="property-card-image" src="${escapeAttr(p.image)}" alt="${escapeAttr(p.name)}" loading="lazy"
             onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
        <div class="property-card-image-placeholder" style="display:none">🏠</div>`
     : `<div class="property-card-image-placeholder">🏠</div>`;
 
-  const metaParts = [p.gender, p.distance].filter(Boolean).join(' · ');
+  // Gender badge overlay
+  const badge = p.gender
+    ? `<span class="property-card-badge">${escapeHtml(p.gender)}</span>`
+    : '';
+
+  // Meta parts with dot separator
+  const metaItems = [p.distance].filter(Boolean);
+  const metaHtml = metaItems.length
+    ? `<div class="property-card-meta">${metaItems.map(escapeHtml).join(' <span class="property-card-meta-dot"></span> ')}</div>`
+    : '';
 
   // Strip /mo if we're already appending it in the template
   const rentDisplay = p.price.replace(/\/mo(nth)?/, '').trim();
@@ -21,12 +30,15 @@ export function buildPropertyCardHtml(p, isSingle) {
     : "";
 
   return `<div class="property-card${isSingle ? ' single' : ''}">
-    ${imgContent}
+    <div class="property-card-img-wrap">
+      ${imgTag}
+      ${badge}
+    </div>
     <div class="property-card-body">
       <div class="property-card-name">${escapeHtml(p.name)}</div>
       ${p.location ? `<div class="property-card-location">📍 ${escapeHtml(p.location)}</div>` : ""}
       ${rentDisplay ? `<div class="property-card-rent">${escapeHtml(rentDisplay)}<span>/mo</span></div>` : ""}
-      ${metaParts  ? `<div class="property-card-meta">${escapeHtml(metaParts)}</div>` : ""}
+      ${metaHtml}
       <div class="property-card-actions">
         ${detailsBtn}
         ${visitBtn}

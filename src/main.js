@@ -8,6 +8,8 @@ import '../styles/compare.css';
 import '../styles/input.css';
 import '../styles/components.css';
 import '../styles/map.css';
+import '../styles/status-card.css';
+import '../styles/gallery.css';
 import 'leaflet/dist/leaflet.css';
 
 // marked.js from npm

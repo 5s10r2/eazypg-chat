@@ -105,6 +105,53 @@
   z-index: 1;
 }
 
+/* ── Match Score Badge (bottom-right of image, above gradient) ── */
+.pc-score {
+  position: absolute;
+  bottom: 8px; right: 8px;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 6px;
+  letter-spacing: 0.02em;
+  z-index: 2;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  text-shadow: none;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+}
+.pc-score-excellent {
+  background: rgba(22, 163, 74, 0.92);
+  color: #fff;
+}
+.pc-score-good {
+  background: rgba(37, 99, 235, 0.88);
+  color: #fff;
+}
+.pc-score-fair {
+  background: rgba(217, 119, 6, 0.88);
+  color: #fff;
+}
+
+/* ── Amenity Pills ── */
+.pc-amenities {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 4px 0 2px;
+}
+.pc-amenity {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--text-light);
+  background: #f1f5f9;
+  padding: 2px 7px;
+  border-radius: 4px;
+  white-space: nowrap;
+  line-height: 1.5;
+  letter-spacing: 0.01em;
+}
+
 /* ── Card Body ── */
 .property-card-body {
   padding: 14px 14px 14px;

@@ -8,6 +8,7 @@ import { renderRichMessage } from './renderers/rich-message.js';
 import { renderFromServerParts } from './renderers/server-parts.js';
 import { saveChatHistory } from './chat-history.js';
 import { initMapPlaceholders } from './components/PropertyMap.js';
+import { openLightbox } from './lightbox.js';
 
 // ─── Add user message ───
 export function addMessage(text, type) {
@@ -69,6 +70,17 @@ export function addBotMessage(text, agent, serverParts) {
     });
     // Initialize any map placeholders inside this bubble
     initMapPlaceholders(b);
+    // Wire image gallery lightbox
+    b.querySelectorAll(".ig-thumb").forEach(thumb => {
+      thumb.addEventListener("click", () => {
+        const gallery = thumb.closest(".image-gallery");
+        if (!gallery) return;
+        const images = JSON.parse(gallery.dataset.images || "[]");
+        const index = parseInt(thumb.dataset.index, 10) || 0;
+        const propName = gallery.dataset.property || "";
+        openLightbox(images, index, propName);
+      });
+    });
     return b;
   }
 

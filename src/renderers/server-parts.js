@@ -27,6 +27,8 @@ function renderPropertyCarousel(part) {
     link: p.link || "",
     lat: p.lat || "",
     lng: p.lng || "",
+    score: p.score || "",
+    amenities: p.amenities || "",
   }));
   if (!props.length) return null;
 
@@ -120,6 +122,132 @@ function renderActionButtons(part) {
   return { html: `<div class="action-buttons">${buttonsHtml}</div>` };
 }
 
+// ── Icon SVGs (inline, no dependencies) ────────────────────────────────
+
+const STATUS_ICONS = {
+  'calendar-check': '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="m9 16 2 2 4-4"/></svg>',
+  'star': '<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>',
+  'wallet': '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="14" rx="2"/><path d="M2 10h20"/><circle cx="16" cy="14" r="1"/></svg>',
+  'calendar': '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>',
+  'clock': '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
+  'location': '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>',
+  'home': '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>',
+};
+
+function _icon(name) {
+  return STATUS_ICONS[name] || '';
+}
+
+// ── Status Card ────────────────────────────────────────────────────────
+
+function renderStatusCard(part) {
+  const status = part.status || 'success';
+  const icon = part.icon || 'calendar-check';
+  const title = escapeHtml(part.title || '');
+  const subtitle = escapeHtml(part.subtitle || '');
+
+  const detailsHtml = (part.details || [])
+    .filter(d => d.text)
+    .map(d => {
+      const detailIcon = _icon(d.icon || 'calendar');
+      const text = escapeHtml(d.text);
+      if (d.url) {
+        return `<div class="sc-detail"><span class="sc-detail-icon">${detailIcon}</span><a href="${escapeHtml(d.url)}" target="_blank" rel="noopener">${text}</a></div>`;
+      }
+      return `<div class="sc-detail"><span class="sc-detail-icon">${detailIcon}</span><span>${text}</span></div>`;
+    })
+    .join('');
+
+  const actionsHtml = (part.actions || []).map(a => {
+    const label = escapeHtml(a.label || '');
+    const action = escapeHtml(a.action || '');
+    const style = a.style === 'primary' ? 'sc-action-primary' : 'sc-action-secondary';
+    if (a.url) {
+      return `<a href="${escapeHtml(a.url)}" target="_blank" rel="noopener" class="sc-action ${style}">${label}</a>`;
+    }
+    return `<button class="sc-action ${style}" data-action="${action}">${label}</button>`;
+  }).join('');
+
+  return { html: `<div class="status-card sc-${status}">
+    <div class="sc-header">
+      <div class="sc-icon">${_icon(icon)}</div>
+      <div class="sc-header-text">
+        <div class="sc-title">${title}</div>
+        ${subtitle ? `<div class="sc-subtitle">${subtitle}</div>` : ''}
+      </div>
+    </div>
+    ${detailsHtml ? `<div class="sc-details">${detailsHtml}</div>` : ''}
+    ${actionsHtml ? `<div class="sc-actions">${actionsHtml}</div>` : ''}
+  </div>` };
+}
+
+// ── Image Gallery ──────────────────────────────────────────────────────
+
+function renderImageGallery(part) {
+  const images = part.images || [];
+  if (!images.length) return null;
+  const propName = escapeHtml(part.property_name || 'Property');
+
+  const thumbsHtml = images.map((img, i) => {
+    const url = escapeHtml(img.url || '');
+    const caption = escapeHtml(img.caption || '');
+    const isMore = i === 3 && images.length > 4;
+    if (isMore) {
+      return `<div class="ig-thumb ig-thumb-more" data-index="${i}" data-gallery="${propName}">
+        <img src="${url}" alt="${caption || propName}" loading="lazy" />
+        <span class="ig-more-count">+${images.length - 4}</span>
+      </div>`;
+    }
+    if (i > 3) return '';  // Hidden, accessible via lightbox
+    return `<div class="ig-thumb" data-index="${i}" data-gallery="${propName}">
+      <img src="${url}" alt="${caption || propName}" loading="lazy" />
+    </div>`;
+  }).join('');
+
+  // Hidden data for lightbox (all images)
+  const galleryData = JSON.stringify(images).replace(/'/g, '&#39;');
+
+  return { html: `<div class="image-gallery" data-images='${galleryData}' data-property="${propName}">
+    <div class="ig-header">
+      <span class="ig-title">${propName}</span>
+      <span class="ig-count">${images.length} photos</span>
+    </div>
+    <div class="ig-grid ig-grid-${Math.min(images.length, 4)}">${thumbsHtml}</div>
+  </div>` };
+}
+
+// ── Confirmation Card ─────────────────────────────────────────────────
+
+function renderConfirmationCard(part) {
+  const title = escapeHtml(part.title || '');
+  const subtitle = escapeHtml(part.subtitle || '');
+  const style = part.style || 'visit'; // visit | payment
+  const confirmAction = escapeHtml(part.confirm_action || 'Confirm');
+  const cancelAction = escapeHtml(part.cancel_action || 'Cancel');
+
+  const detailsHtml = (part.details || [])
+    .filter(d => d.text)
+    .map(d => {
+      const detailIcon = _icon(d.icon || 'calendar');
+      const text = escapeHtml(d.text);
+      return `<div class="cc-detail"><span class="cc-detail-icon">${detailIcon}</span><span>${text}</span></div>`;
+    })
+    .join('');
+
+  return { html: `<div class="confirmation-card cc-${style}">
+    <div class="cc-badge">${style === 'payment' ? '💳' : '📅'} ${t("comparison_header").includes("Compar") ? 'Confirm' : title}</div>
+    <div class="cc-header">
+      <div class="cc-title">${title}</div>
+      ${subtitle ? `<div class="cc-subtitle">${subtitle}</div>` : ''}
+    </div>
+    ${detailsHtml ? `<div class="cc-details">${detailsHtml}</div>` : ''}
+    <div class="cc-actions">
+      <button class="cc-action cc-confirm" data-action="${confirmAction}">✓ ${confirmAction}</button>
+      <button class="cc-action cc-cancel" data-action="${cancelAction}">${cancelAction}</button>
+    </div>
+  </div>` };
+}
+
 // ── Component Registry ─────────────────────────────────────────────────
 
 const PART_RENDERERS = {
@@ -128,6 +256,9 @@ const PART_RENDERERS = {
   comparison_table: renderComparisonTable,
   quick_replies: renderQuickReplies,
   action_buttons: renderActionButtons,
+  status_card: renderStatusCard,
+  image_gallery: renderImageGallery,
+  confirmation_card: renderConfirmationCard,
 };
 
 // ── Main entry point ───────────────────────────────────────────────────

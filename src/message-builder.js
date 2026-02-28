@@ -38,8 +38,25 @@ export function addBotMessage(text, agent, serverParts) {
     ? (renderFromServerParts(serverParts) || renderRichMessage(text, agent))
     : renderRichMessage(text, agent);
 
+  // Check if backend sent chips via quick_replies part type
+  const hasBackendChips = parts.some(p => p.isChips);
+
   // Helper: create one .bubble, wire its [data-action] buttons + map placeholders
-  function makeBubble(html, showBadge) {
+  function makeBubble(html, showBadge, isChipsPart) {
+    // Chips parts are appended outside the bubble (not inside a bubble)
+    if (isChipsPart) {
+      const qrDiv = document.createElement("div");
+      qrDiv.className = "quick-replies";
+      qrDiv.id = "activeQuickReplies";
+      qrDiv.innerHTML = html;
+      qrDiv.querySelectorAll("[data-action]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          if (btn.dataset.action) window.sendQuick(btn.dataset.action);
+        });
+      });
+      return qrDiv;
+    }
+
     const b = document.createElement("div");
     b.className = "bubble";
     b.innerHTML = (showBadge
@@ -58,21 +75,24 @@ export function addBotMessage(text, agent, serverParts) {
   let badgeShown = false;
   for (const part of parts) {
     if (!part.html || !part.html.trim()) continue;
-    row.appendChild(makeBubble(part.html, !badgeShown));
-    badgeShown = true;
+    const isChips = !!part.isChips;
+    row.appendChild(makeBubble(part.html, !badgeShown && !isChips, isChips));
+    if (!isChips) badgeShown = true;
   }
 
-  // Quick reply chips
-  const chipsHtml = buildQuickReplies(text, agent);
-  if (chipsHtml) {
-    const qrDiv = document.createElement("div");
-    qrDiv.className = "quick-replies";
-    qrDiv.id = "activeQuickReplies";
-    qrDiv.innerHTML = chipsHtml;
-    qrDiv.querySelectorAll(".qr-chip").forEach(chip => {
-      chip.addEventListener("click", () => window.sendQuick(chip.dataset.action));
-    });
-    row.appendChild(qrDiv);
+  // Fallback: frontend-generated chips ONLY if backend didn't send any
+  if (!hasBackendChips) {
+    const chipsHtml = buildQuickReplies(text, agent);
+    if (chipsHtml) {
+      const qrDiv = document.createElement("div");
+      qrDiv.className = "quick-replies";
+      qrDiv.id = "activeQuickReplies";
+      qrDiv.innerHTML = chipsHtml;
+      qrDiv.querySelectorAll(".qr-chip").forEach(chip => {
+        chip.addEventListener("click", () => window.sendQuick(chip.dataset.action));
+      });
+      row.appendChild(qrDiv);
+    }
   }
 
   // Feedback thumbs

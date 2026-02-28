@@ -22,6 +22,41 @@
 }
 .qr-chip:active { background: #f1f5f9; transform: scale(0.96); }
 
+/* ─── Action Buttons (backend-controlled) ─── */
+.action-buttons {
+  display: flex; flex-wrap: wrap; gap: 8px;
+  padding: 8px 0 10px;
+  max-width: min(520px, 88%);
+}
+.action-btn {
+  border-radius: 10px;
+  height: 38px; padding: 0 18px;
+  font-size: 13px; font-weight: 600;
+  cursor: pointer; font-family: var(--font);
+  display: inline-flex; align-items: center; gap: 6px;
+  transition: background 0.15s, border-color 0.15s, box-shadow 0.15s, transform 0.1s;
+  white-space: nowrap;
+}
+.action-btn-primary {
+  background: var(--accent); color: #fff;
+  border: 1px solid var(--accent);
+}
+.action-btn-primary:hover {
+  background: #005bcc;
+  box-shadow: 0 2px 8px rgba(0,112,243,0.25);
+}
+.action-btn-primary:active { transform: scale(0.97); }
+.action-btn-secondary {
+  background: #fff; color: var(--text);
+  border: 1px solid var(--border);
+}
+.action-btn-secondary:hover {
+  background: #f8fafc;
+  border-color: #94a3b8;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+.action-btn-secondary:active { background: #f1f5f9; transform: scale(0.97); }
+
 /* ─── Feedback Buttons ─── */
 .feedback-row {
   display: flex; gap: 4px; margin-top: 4px;

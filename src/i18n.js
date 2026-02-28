@@ -36,6 +36,9 @@ export const TRANSLATIONS = {
     chip_diff_area: "💬 Different Area", chip_my_bookings: "📋 My Bookings",
     chip_browse_more: "🏠 Browse More", chip_ive_paid: "✅ I've paid",
     chip_compare: "⚖️ Compare",
+    chip_commute: "🚗 Commute", chip_loved_it: "😍 Loved it",
+    chip_was_okay: "😐 It was okay", chip_not_for_me: "👎 Not for me",
+    chip_more_options: "🔍 More Options",
   },
   hi: {
     header_status: "ऑनलाइन · आपका PG ब्रोकर",
@@ -65,6 +68,9 @@ export const TRANSLATIONS = {
     chip_diff_area: "💬 दूसरा एरिया", chip_my_bookings: "📋 मेरी बुकिंग",
     chip_browse_more: "🏠 और देखें", chip_ive_paid: "✅ पेमेंट हो गया",
     chip_compare: "⚖️ तुलना",
+    chip_commute: "🚗 कम्यूट", chip_loved_it: "😍 बहुत पसंद",
+    chip_was_okay: "😐 ठीक था", chip_not_for_me: "👎 नहीं चाहिए",
+    chip_more_options: "🔍 और विकल्प",
   },
   mr: {
     header_status: "ऑनलाइन · तुमचा PG ब्रोकर",
@@ -94,6 +100,9 @@ export const TRANSLATIONS = {
     chip_diff_area: "💬 वेगळा एरिया", chip_my_bookings: "📋 माझ्या बुकिंग",
     chip_browse_more: "🏠 अजून पहा", chip_ive_paid: "✅ पेमेंट केलं",
     chip_compare: "⚖️ तुलना",
+    chip_commute: "🚗 कम्यूट", chip_loved_it: "😍 आवडलं",
+    chip_was_okay: "😐 ठीक होतं", chip_not_for_me: "👎 नको",
+    chip_more_options: "🔍 अजून पर्याय",
   }
 };
 

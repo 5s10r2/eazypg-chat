@@ -4,7 +4,7 @@ import { ACCOUNT_VALUES, userId, isWaiting, firstRequest, setIsWaiting, setFirst
 import { escapeHtml, timeNow, scrollToBottom } from './helpers.js';
 import { currentLocale, setCurrentLocale, TRANSLATIONS, agentLabel, updateUIStrings, t } from './i18n.js';
 import { addMessage, addBotMessage } from './message-builder.js';
-import { createStreamingRow } from './streaming-ui.js';
+import { createStreamingRow, getSkeletonHtml } from './streaming-ui.js';
 
 function clearQuickReplies() {
   const el = document.getElementById("activeQuickReplies");
@@ -118,17 +118,29 @@ export async function sendMessage() {
             break;
           }
           case "tool_start": {
-            const toolName = (parsed.tool || "working")
+            const rawTool = parsed.tool || "working";
+            const toolLabel = rawTool
               .replace(/_/g, " ")
               .replace(/\b\w/g, c => c.toUpperCase());
-            statusEl.innerHTML = '<span class="dot-pulse"></span> ' + escapeHtml(toolName) + '…';
+            statusEl.innerHTML = '<span class="dot-pulse"></span> ' + escapeHtml(toolLabel) + '…';
             statusEl.style.display = "flex";
+            // Show content-aware skeleton if no text streamed yet
+            if (!fullText) {
+              contentEl.innerHTML = getSkeletonHtml(rawTool);
+              contentEl.classList.remove("streaming");
+            }
+            scrollToBottom();
             break;
           }
           case "tool_done":
             statusEl.style.display = "none";
             break;
           case "content_delta":
+            // Clear skeleton on first text chunk
+            if (!fullText && contentEl.querySelector('.skeleton')) {
+              contentEl.innerHTML = '';
+              contentEl.classList.add("streaming");
+            }
             fullText += parsed.text;
             contentEl.innerHTML = marked.parse(fullText);
             scrollToBottom();

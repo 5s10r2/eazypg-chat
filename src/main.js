@@ -10,6 +10,7 @@ import '../styles/components.css';
 import '../styles/map.css';
 import '../styles/status-card.css';
 import '../styles/gallery.css';
+import '../styles/animations.css';
 import 'leaflet/dist/leaflet.css';
 
 // marked.js from npm

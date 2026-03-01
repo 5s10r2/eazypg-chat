@@ -1,7 +1,7 @@
 // ─── Render from Server Parts (Component Registry pattern) ───
 import { marked } from 'marked';
 import { nextCarouselSeq } from '../config.js';
-import { escapeHtml } from '../helpers.js';
+import { escapeHtml, escapeAttr } from '../helpers.js';
 import { t } from '../i18n.js';
 import { buildPropertyCardHtml } from './property-card.js';
 
@@ -145,6 +145,7 @@ function renderStatusCard(part) {
   const icon = part.icon || 'calendar-check';
   const title = escapeHtml(part.title || '');
   const subtitle = escapeHtml(part.subtitle || '');
+  const celebration = part.celebration || '';
 
   const detailsHtml = (part.details || [])
     .filter(d => d.text)
@@ -168,7 +169,7 @@ function renderStatusCard(part) {
     return `<button class="sc-action ${style}" data-action="${action}">${label}</button>`;
   }).join('');
 
-  return { html: `<div class="status-card sc-${status}">
+  let cardHtml = `<div class="status-card sc-${status}">
     <div class="sc-header">
       <div class="sc-icon">${_icon(icon)}</div>
       <div class="sc-header-text">
@@ -178,7 +179,20 @@ function renderStatusCard(part) {
     </div>
     ${detailsHtml ? `<div class="sc-details">${detailsHtml}</div>` : ''}
     ${actionsHtml ? `<div class="sc-actions">${actionsHtml}</div>` : ''}
-  </div>` };
+  </div>`;
+
+  // Celebration overlay
+  if (celebration === 'confetti') {
+    let particles = '';
+    for (let i = 0; i < 12; i++) particles += `<span class="confetti-particle"></span>`;
+    cardHtml = `<div class="celebration-wrap">${cardHtml}<div class="confetti-burst">${particles}</div></div>`;
+  } else if (celebration === 'heart') {
+    cardHtml = `<div class="celebration-wrap">${cardHtml}<div class="heart-celebration">❤️</div></div>`;
+  } else if (celebration === 'checkmark') {
+    cardHtml = `<div class="celebration-wrap">${cardHtml}<div class="checkmark-celebration"><svg viewBox="0 0 52 52"><circle cx="26" cy="26" r="25" fill="none" stroke="currentColor" stroke-width="2"/><path fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" d="M14.1 27.2l7.1 7.2 16.7-16.8"/></svg></div></div>`;
+  }
+
+  return { html: cardHtml };
 }
 
 // ── Image Gallery ──────────────────────────────────────────────────────
@@ -248,6 +262,29 @@ function renderConfirmationCard(part) {
   </div>` };
 }
 
+// ── Error Card Renderer ───────────────────────────────────────────────
+
+function renderErrorCard(part) {
+  const title = escapeHtml(part.title || 'Something went wrong');
+  const message = escapeHtml(part.message || 'Please try again in a moment.');
+
+  let retryHtml = '';
+  if (part.retry_action && part.retry_message) {
+    const retryLabel = escapeHtml(part.retry_action);
+    const retryMsg = escapeAttr(part.retry_message);
+    retryHtml = `<button class="ec-retry" data-action="${retryMsg}"><span class="ec-retry-icon">↻</span> ${retryLabel}</button>`;
+  }
+
+  return { html: `<div class="error-card">
+    <div class="ec-header">
+      <div class="ec-icon">⚠</div>
+      <div class="ec-title">${title}</div>
+    </div>
+    <div class="ec-message">${message}</div>
+    ${retryHtml}
+  </div>` };
+}
+
 // ── Component Registry ─────────────────────────────────────────────────
 
 const PART_RENDERERS = {
@@ -259,6 +296,7 @@ const PART_RENDERERS = {
   status_card: renderStatusCard,
   image_gallery: renderImageGallery,
   confirmation_card: renderConfirmationCard,
+  error_card: renderErrorCard,
 };
 
 // ── Main entry point ───────────────────────────────────────────────────

@@ -85,11 +85,19 @@ export function addBotMessage(text, agent, serverParts) {
   }
 
   let badgeShown = false;
+  let partIdx = 0;
   for (const part of parts) {
     if (!part.html || !part.html.trim()) continue;
     const isChips = !!part.isChips;
-    row.appendChild(makeBubble(part.html, !badgeShown && !isChips, isChips));
+    const el = makeBubble(part.html, !badgeShown && !isChips, isChips);
+    // Stagger animation delay per part (50ms * index)
+    if (partIdx > 0) {
+      el.classList.add("part-stagger");
+      el.style.animationDelay = `${partIdx * 50}ms`;
+    }
+    row.appendChild(el);
     if (!isChips) badgeShown = true;
+    partIdx++;
   }
 
   // Fallback: frontend-generated chips ONLY if backend didn't send any

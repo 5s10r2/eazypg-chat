@@ -285,6 +285,61 @@ function renderErrorCard(part) {
   </div>` };
 }
 
+// ── Expandable Sections ───────────────────────────────────────────────
+
+function renderExpandableSections(part) {
+  const sections = part.sections || [];
+  if (!sections.length) return null;
+
+  const sectionsHtml = sections.map(sec => {
+    const id = escapeAttr(sec.id || '');
+    const icon = sec.icon || '';
+    const title = escapeHtml(sec.title || '');
+    const contentType = sec.content_type || 'text';
+    const items = sec.items || [];
+
+    let bodyHtml = '';
+
+    if (contentType === 'pills') {
+      const pills = items.map(item => {
+        const label = escapeHtml(typeof item === 'string' ? item : String(item));
+        return `<span class="exp-pill">${label}</span>`;
+      }).join('');
+      bodyHtml = `<div class="exp-pills">${pills}</div>`;
+    } else if (contentType === 'key_value') {
+      const rows = items.map(item => {
+        const label = escapeHtml(item.label || '');
+        const value = escapeHtml(item.value || '');
+        return `<div class="exp-kv-row"><span class="exp-kv-label">${label}</span><span class="exp-kv-value">${value}</span></div>`;
+      }).join('');
+      bodyHtml = `<div class="exp-kv-list">${rows}</div>`;
+    } else if (contentType === 'qa') {
+      const qas = items.map(item => {
+        const q = escapeHtml(item.question || '');
+        const a = escapeHtml(item.answer || '');
+        return `<div class="exp-qa"><div class="exp-q">${q}</div><div class="exp-a">${a}</div></div>`;
+      }).join('');
+      bodyHtml = `<div class="exp-qa-list">${qas}</div>`;
+    } else {
+      // text
+      const text = items.map(i => escapeHtml(typeof i === 'string' ? i : String(i))).join('<br/>');
+      bodyHtml = `<div class="exp-text">${text}</div>`;
+    }
+
+    return `<details class="exp-section" id="exp-${id}">
+      <summary class="exp-header">
+        <span class="exp-icon">${icon}</span>
+        <span class="exp-title">${title}</span>
+        <span class="exp-count">${contentType === 'pills' ? items.length : ''}</span>
+        <span class="exp-chevron">&#9658;</span>
+      </summary>
+      <div class="exp-body">${bodyHtml}</div>
+    </details>`;
+  }).join('');
+
+  return { html: `<div class="expandable-sections">${sectionsHtml}</div>` };
+}
+
 // ── Component Registry ─────────────────────────────────────────────────
 
 const PART_RENDERERS = {
@@ -297,6 +352,7 @@ const PART_RENDERERS = {
   image_gallery: renderImageGallery,
   confirmation_card: renderConfirmationCard,
   error_card: renderErrorCard,
+  expandable_sections: renderExpandableSections,
 };
 
 // ── Main entry point ───────────────────────────────────────────────────

@@ -1,5 +1,5 @@
 // ─── Rich Message Renderer ───
-import { marked } from 'marked';
+import { safeParse } from '../sanitize.js';
 import { nextCarouselSeq } from '../config.js';
 import { t } from '../i18n.js';
 import { buildPropertyCardHtml } from './property-card.js';
@@ -65,7 +65,7 @@ export function renderRichMessage(text, agent) {
   }
 
   // 4. Default markdown — single Part, single bubble
-  let html = marked.parse(text);
+  let html = safeParse(text);
   html = html.replace(/(₹[\d,]+(?:\s*(?:\/\s*(?:month|mo|day))|(?:\s*per\s*(?:month|day)))?)/g,
     '<span class="price-inline">$1</span>');
   return [{ html: `<div class="msg-content">${html}</div>` }];
@@ -144,8 +144,8 @@ function renderPropertyCarousel(text, matches, isLegacy) {
     `;
   }
 
-  let preHtml  = preText  ? marked.parse(preText)  : "";
-  let postHtml = postText ? marked.parse(postText) : "";
+  let preHtml  = preText  ? safeParse(preText)  : "";
+  let postHtml = postText ? safeParse(postText) : "";
   [preHtml, postHtml] = [preHtml, postHtml].map(h =>
     h.replace(/(₹[\d,]+(?:\s*(?:\/\s*(?:month|mo|day)))?)/g, '<span class="price-inline">$1</span>')
   );

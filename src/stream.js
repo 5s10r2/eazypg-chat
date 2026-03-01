@@ -1,5 +1,5 @@
 // ─── Send Message (SSE streaming) ───
-import { marked } from 'marked';
+import { safeParse } from './sanitize.js';
 import { ACCOUNT_VALUES, userId, isWaiting, firstRequest, setIsWaiting, setFirstRequest } from './config.js';
 import { escapeHtml, timeNow, scrollToBottom } from './helpers.js';
 import { currentLocale, setCurrentLocale, TRANSLATIONS, agentLabel, updateUIStrings, t } from './i18n.js';
@@ -142,7 +142,7 @@ export async function sendMessage() {
               contentEl.classList.add("streaming");
             }
             fullText += parsed.text;
-            contentEl.innerHTML = marked.parse(fullText);
+            contentEl.innerHTML = safeParse(fullText);
             scrollToBottom();
             break;
           case "done":

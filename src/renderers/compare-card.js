@@ -1,7 +1,7 @@
 // ─── Comparison Card ───
 import { escapeHtml } from '../helpers.js';
 import { t } from '../i18n.js';
-import { marked } from 'marked';
+import { safeParse, safeParseInline } from '../sanitize.js';
 
 export function buildCompareCardHtml(lines) {
   // Remove separator lines (---|---|---)
@@ -21,7 +21,7 @@ export function buildCompareCardHtml(lines) {
   const winnerRow = dataRows.find(isWinnerRow);
 
   // renderCell: parse inline markdown (bold, italic) in header/cell text
-  const renderCell = text => marked.parseInline ? marked.parseInline(text) : escapeHtml(text);
+  const renderCell = text => safeParseInline(text);
 
   const colHeaders = headerRow.map(h =>
     `<th>${renderCell(h)}</th>`
@@ -85,7 +85,7 @@ export function renderWithCompareTable(text) {
     if (seg.type === 'table') {
       parts.push({ html: buildCompareCardHtml(seg.content) });
     } else {
-      let h = marked.parse(seg.content);
+      let h = safeParse(seg.content);
       h = h.replace(priceRe, '<span class="price-inline">$1</span>');
       if (h.trim()) parts.push({ html: `<div class="msg-content">${h}</div>` });
     }

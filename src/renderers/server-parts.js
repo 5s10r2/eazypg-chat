@@ -1,5 +1,5 @@
 // ─── Render from Server Parts (Component Registry pattern) ───
-import { marked } from 'marked';
+import { safeParse, safeParseInline } from '../sanitize.js';
 import { nextCarouselSeq } from '../config.js';
 import { escapeHtml, escapeAttr } from '../helpers.js';
 import { t } from '../i18n.js';
@@ -9,7 +9,7 @@ import { buildPropertyCardHtml } from './property-card.js';
 
 function renderTextPart(part) {
   const priceRe = /(₹[\d,]+(?:\s*(?:\/\s*(?:month|mo|day)))?)/g;
-  let h = marked.parse(part.markdown || "");
+  let h = safeParse(part.markdown || "");
   h = h.replace(priceRe, '<span class="price-inline">$1</span>');
   if (!h.trim()) return null;
   return { html: `<div class="msg-content">${h}</div>` };
@@ -67,7 +67,7 @@ function renderComparisonTable(part) {
   const rows = part.rows || [];
   if (headers.length < 2 || rows.length < 1) return null;
 
-  const renderCell = text => marked.parseInline ? marked.parseInline(text) : escapeHtml(text);
+  const renderCell = text => safeParseInline(text);
   const colHeaders = headers.map(h => `<th>${renderCell(h)}</th>`).join('');
   const bodyHtml = rows.map(row => {
     const cells = row.map(c => {

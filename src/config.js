@@ -1,5 +1,6 @@
 // ─── Config ───
-export const ACCOUNT_VALUES = {
+// OxOtel defaults — used when no ?brand= param or on fetch failure
+export const FALLBACK_ACCOUNT_VALUES = {
   pg_ids: [
     "l5zf3ckOnRQV9OHdv5YTTXkvLHp1",
     "egu5HmrYFMP8MRJyMsefnpaL7ka2",
@@ -16,6 +17,10 @@ export const ACCOUNT_VALUES = {
   cities: "Mumbai",
   areas: "Andheri, Kurla, Powai"
 };
+
+// Set at startup from ?brand= fetch; null means use FALLBACK_ACCOUNT_VALUES
+export let ACCOUNT_VALUES = null;
+export function setAccountValues(v) { ACCOUNT_VALUES = v; }
 
 // ─── State ───
 export let userId = localStorage.getItem("eazypg_user_id");

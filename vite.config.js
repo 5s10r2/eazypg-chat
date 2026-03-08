@@ -14,11 +14,12 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      '/api': {
-        target: 'https://claude-booking-bot.onrender.com',
-        changeOrigin: true,
-        rewrite: (path) => path,
-      },
+      '/api/stream':   { target: 'http://localhost:8000', changeOrigin: true, rewrite: () => '/chat/stream' },
+      '/api/chat':     { target: 'http://localhost:8000', changeOrigin: true, rewrite: () => '/chat' },
+      '/api/feedback': { target: 'http://localhost:8000', changeOrigin: true, rewrite: () => '/feedback' },
+      '/api/analytics':{ target: 'http://localhost:8000', changeOrigin: true, rewrite: () => '/admin/analytics' },
+      '/api/language':      { target: 'http://localhost:8000', changeOrigin: true, rewrite: () => '/language' },
+      '/api/brand-config':  { target: 'http://localhost:8000', changeOrigin: true, rewrite: (p) => p.replace('/api/brand-config', '/brand-config').replace('brand=', 'token=') },
     },
   },
 });

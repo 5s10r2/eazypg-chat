@@ -1,6 +1,6 @@
 // ─── Send Message (SSE streaming) ───
 import { safeParse } from './sanitize.js';
-import { ACCOUNT_VALUES, userId, isWaiting, firstRequest, setIsWaiting, setFirstRequest } from './config.js';
+import { ACCOUNT_VALUES, FALLBACK_ACCOUNT_VALUES, userId, isWaiting, firstRequest, setIsWaiting, setFirstRequest } from './config.js';
 import { escapeHtml, timeNow, scrollToBottom } from './helpers.js';
 import { currentLocale, setCurrentLocale, TRANSLATIONS, agentLabel, updateUIStrings, t } from './i18n.js';
 import { addMessage, addBotMessage } from './message-builder.js';
@@ -52,7 +52,7 @@ export async function sendMessage() {
       body: JSON.stringify({
         user_id: userId,
         message: text,
-        account_values: ACCOUNT_VALUES
+        account_values: ACCOUNT_VALUES ?? FALLBACK_ACCOUNT_VALUES
       })
     });
 

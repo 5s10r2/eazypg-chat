@@ -22,6 +22,7 @@ import { autoGrow } from './helpers.js';
 import { loadChatHistory, clearChat } from './chat-history.js';
 import { sendMessage, sendQuick } from './stream.js';
 import { initVoiceInput, toggleVoiceInput } from './voice-input.js';
+import { setAccountValues } from './config.js';
 
 // ─── Configure marked.js ───
 marked.setOptions({ breaks: true, gfm: true, headerIds: false, mangle: false });
@@ -48,8 +49,32 @@ document.addEventListener("scroll", function(e) {
   counter.textContent = `${idx} / ${total}`;
 }, true);
 
+// ─── Brand config fetch (called on page load when ?brand= param present) ───
+async function fetchBrandConfig() {
+  const brandToken = new URLSearchParams(window.location.search).get('brand');
+  if (!brandToken) return; // no ?brand= → use FALLBACK_ACCOUNT_VALUES immediately
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 3000);
+  try {
+    const res = await fetch(
+      `/api/brand-config?brand=${encodeURIComponent(brandToken)}`,
+      { signal: controller.signal }
+    );
+    if (res.ok) {
+      const data = await res.json();
+      if (data.is_configured && data.pg_ids?.length) {
+        setAccountValues(data);
+      }
+    }
+  } catch {
+    // 3s timeout or network error → silently fall through to FALLBACK_ACCOUNT_VALUES
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 // ─── Init on page load ───
-window.addEventListener("load", () => {
+window.addEventListener("load", async () => {
   // Restore saved locale
   const savedLocale = localStorage.getItem("eazypg_locale");
   if (savedLocale && TRANSLATIONS[savedLocale]) {
@@ -60,4 +85,5 @@ window.addEventListener("load", () => {
   loadChatHistory();
   initVoiceInput();
   document.getElementById("msgInput").focus();
+  await fetchBrandConfig();
 });

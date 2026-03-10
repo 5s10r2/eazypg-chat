@@ -71,6 +71,33 @@ export function renderRichMessage(text, agent) {
   return [{ html: `<div class="msg-content">${html}</div>` }];
 }
 
+// ─── Extract amenities from a property text block ───
+function _extractAmenities(block) {
+  const knownKeywords = [
+    'wifi', 'wi-fi', 'ac', 'air conditioning', 'meals', 'food', 'laundry',
+    'parking', 'gym', 'tv', 'security', 'cctv', 'hot water', 'geyser',
+    'fridge', 'power backup', 'housekeeping', 'attached bathroom', 'attached bath',
+  ];
+  const found = [];
+  const blockLower = block.toLowerCase();
+
+  // Scan for known keywords
+  for (const kw of knownKeywords) {
+    if (blockLower.includes(kw) && !found.includes(kw)) found.push(kw);
+  }
+
+  // Explicit "Amenities: ..." line
+  const amenLine = block.match(/[Aa]menitie?s?[:\s]+([^\n]+)/);
+  if (amenLine) {
+    amenLine[1].split(/[,|;]+/).forEach(a => {
+      const clean = a.trim().toLowerCase();
+      if (clean && !found.includes(clean)) found.push(clean);
+    });
+  }
+
+  return found.join(', ');
+}
+
 // ─── Render Property Carousel (from matched listings) ───
 function renderPropertyCarousel(text, matches, isLegacy) {
   const properties = [];
@@ -109,7 +136,7 @@ function renderPropertyCarousel(text, matches, isLegacy) {
     const image = imgM  ? imgM[1]  : "";
     const link  = linkM ? linkM[1] : "";
 
-    properties.push({ num, name, price, location, gender, distance, image, link });
+    properties.push({ num, name, price, location, gender, distance, image, link, amenities: _extractAmenities(block) });
   }
 
   const preText = text.slice(0, matches[0].index).trim();
@@ -133,7 +160,7 @@ function renderPropertyCarousel(text, matches, isLegacy) {
 
   let carouselHtml;
   if (isSingle) {
-    carouselHtml = `<div style="margin:8px 0 4px">${cardsHtml}</div>`;
+    carouselHtml = `<div class="single-card-wrap">${cardsHtml}</div>`;
   } else {
     carouselHtml = `
       <div class="carousel-wrapper">

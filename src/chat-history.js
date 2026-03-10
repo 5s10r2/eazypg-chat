@@ -9,8 +9,19 @@ const MAX_HISTORY = 100;
 
 export function saveChatHistory() {
   try {
-    localStorage.setItem(HISTORY_KEY, JSON.stringify(chatHistory.slice(-MAX_HISTORY)));
-  } catch (e) { console.warn("Failed to save chat history:", e); }
+    const slice = chatHistory.slice(-MAX_HISTORY);
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(slice));
+  } catch (e) {
+    if (e.name === 'QuotaExceededError') {
+      // Trim aggressively and retry
+      try {
+        const trimmed = chatHistory.slice(-20);
+        localStorage.setItem(HISTORY_KEY, JSON.stringify(trimmed));
+      } catch (_) { /* give up gracefully */ }
+    } else {
+      console.warn("Failed to save chat history:", e);
+    }
+  }
 }
 
 export function loadChatHistory() {
@@ -35,7 +46,7 @@ export function loadChatHistory() {
       if (msg.role === "user") {
         restoreUserMsg(msg.text, msg.time);
       } else {
-        restoreBotMsg(msg.text, msg.agent, msg.time, isLast);
+        restoreBotMsg(msg.text, msg.agent, msg.time, isLast, msg.serverParts || null);
       }
     }
     scrollToBottom();

@@ -78,8 +78,12 @@
 }
 .feedback-btn {
   background: none; border: 1px solid transparent; border-radius: 6px;
-  cursor: pointer; padding: 3px 6px; font-size: 14px; opacity: 0.40;
+  cursor: pointer; padding: 3px 6px; font-size: 14px; opacity: 0.55;
   transition: all 0.15s ease;
+}
+.feedback-btn:disabled {
+  opacity: 0.25; cursor: not-allowed;
+  transform: none !important;
 }
 .feedback-btn:hover {
   opacity: 1; background: #f1f5f9; border-color: var(--border);
@@ -318,4 +322,13 @@ details.exp-section[open] .exp-chevron {
 @media (prefers-reduced-motion: reduce) {
   .exp-chevron { transition: none; }
   @keyframes expReveal { from { opacity: 1; transform: none; } }
+}
+
+/* ─── Focus-visible rings ─── */
+.qr-chip:focus-visible,
+.action-btn:focus-visible,
+.feedback-btn:focus-visible,
+.quick-action:focus-visible {
+  outline: 2px solid #6366f1;
+  outline-offset: 2px;
 }

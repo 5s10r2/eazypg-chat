@@ -22,8 +22,14 @@
   font-size: 13px;
 }
 
+/* ── Table scroll wrapper (mobile horizontal scroll) ── */
+.compare-tbl-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
 /* ── Table ── */
-.compare-tbl { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.compare-tbl { width: 100%; min-width: 320px; border-collapse: collapse; font-size: 12.5px; }
 .compare-tbl th {
   background: #fff;
   padding: 10px 12px;
@@ -31,6 +37,8 @@
   text-align: left; color: var(--text);
   border-bottom: 2px solid var(--border);
   letter-spacing: -0.01em;
+  white-space: nowrap;
+  min-width: 90px;
 }
 .compare-tbl th:first-child {
   color: var(--text-light);
@@ -53,7 +61,16 @@
   color: var(--text-light);
   font-weight: 500;
   font-size: 12px;
+  white-space: nowrap;
 }
+
+/* ── Winner column highlight ── */
+.compare-tbl th.cmp-winner-col {
+  background: #f0fdf4;
+  color: #15803d;
+  border-bottom-color: #86efac;
+}
+.compare-tbl td.cmp-winner-col { background: rgba(240,253,244,0.6); }
 
 /* ── Cell states ── */
 .cmp-yes { font-weight: 600; color: var(--text); }

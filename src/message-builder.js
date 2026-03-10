@@ -10,6 +10,24 @@ import { saveChatHistory } from './chat-history.js';
 import { initMapPlaceholders } from './components/PropertyMap.js';
 import { openLightbox } from './lightbox.js';
 
+// ─── Carousel counter wiring ───
+function initCarouselCounters(el) {
+  el.querySelectorAll('.property-carousel').forEach(carousel => {
+    const total = parseInt(carousel.dataset.total || '0');
+    if (!total) return;
+    const counterId = carousel.id.replace('pc', 'cc');
+    const counter = document.getElementById(counterId);
+    if (!counter) return;
+
+    carousel.addEventListener('scroll', () => {
+      const cardWidth = carousel.querySelector('.property-card')?.offsetWidth || 260;
+      const gap = 10;
+      const idx = Math.round(carousel.scrollLeft / (cardWidth + gap));
+      counter.textContent = `${Math.min(idx + 1, total)} / ${total}`;
+    }, { passive: true });
+  });
+}
+
 // ─── Add user message ───
 export function addMessage(text, type) {
   const chatArea = document.getElementById("chatArea");
@@ -42,6 +60,9 @@ export function addBotMessage(text, agent, serverParts) {
   // Check if backend sent chips via quick_replies part type
   const hasBackendChips = parts.some(p => p.isChips);
 
+  // Detect error response — skip feedback row for errors
+  const isErrorResponse = !!(serverParts?.some(p => p.type === 'error_card'));
+
   // Helper: create one .bubble, wire its [data-action] buttons + map placeholders
   function makeBubble(html, showBadge, isChipsPart) {
     // Chips parts are appended outside the bubble (not inside a bubble)
@@ -70,6 +91,8 @@ export function addBotMessage(text, agent, serverParts) {
     });
     // Initialize any map placeholders inside this bubble
     initMapPlaceholders(b);
+    // Wire carousel counters
+    initCarouselCounters(b);
     // Wire image gallery lightbox
     b.querySelectorAll(".ig-thumb").forEach(thumb => {
       thumb.addEventListener("click", () => {
@@ -102,7 +125,7 @@ export function addBotMessage(text, agent, serverParts) {
 
   // Fallback: frontend-generated chips ONLY if backend didn't send any
   if (!hasBackendChips) {
-    const chipsHtml = buildQuickReplies(text, agent);
+    const chipsHtml = buildQuickReplies(text, agent, serverParts || []);
     if (chipsHtml) {
       const qrDiv = document.createElement("div");
       qrDiv.className = "quick-replies";
@@ -115,12 +138,19 @@ export function addBotMessage(text, agent, serverParts) {
     }
   }
 
-  // Feedback thumbs
-  row.appendChild(buildFeedbackRow(text, agent));
+  // Feedback thumbs — skip on error responses
+  if (!isErrorResponse) {
+    row.appendChild(buildFeedbackRow(text, agent));
+  }
 
   chatArea.appendChild(row);
   scrollToBottom();
-  chatHistory.push({ role: "bot", text, agent, time: timeNow() });
+
+  // Persist to history — exclude image_gallery parts (too large for localStorage)
+  const partsToStore = serverParts
+    ? serverParts.filter(p => p.type !== 'image_gallery')
+    : null;
+  chatHistory.push({ role: "bot", text, agent, time: timeNow(), serverParts: partsToStore });
   saveChatHistory();
 }
 
@@ -138,7 +168,7 @@ export function restoreUserMsg(text, time) {
 }
 
 // ─── Restore bot message (no animation, for chat history replay) ───
-export function restoreBotMsg(text, agent, time, isLast) {
+export function restoreBotMsg(text, agent, time, isLast, serverParts) {
   const chatArea = document.getElementById("chatArea");
   const row = document.createElement("div");
   row.className = "msg-row bot";
@@ -146,10 +176,16 @@ export function restoreBotMsg(text, agent, time, isLast) {
 
   const label = agentLabel(agent);
 
-  const parts = renderRichMessage(text, agent);
+  // Use stored serverParts if available, else fall back to text parsing
+  const parts = (serverParts && serverParts.length)
+    ? (renderFromServerParts(serverParts) || renderRichMessage(text, agent))
+    : renderRichMessage(text, agent);
+
   let badgeShown = false;
   for (const part of parts) {
     if (!part.html || !part.html.trim()) continue;
+    const isChips = !!part.isChips;
+    if (isChips) continue; // don't restore chips mid-history, only on last message
     const b = document.createElement("div");
     b.className = "bubble";
     b.style.animation = "none";
@@ -161,13 +197,25 @@ export function restoreBotMsg(text, agent, time, isLast) {
         if (btn.dataset.action) window.sendQuick(btn.dataset.action);
       });
     });
+    initMapPlaceholders(b);
+    initCarouselCounters(b);
+    b.querySelectorAll(".ig-thumb").forEach(thumb => {
+      thumb.addEventListener("click", () => {
+        const gallery = thumb.closest(".image-gallery");
+        if (!gallery) return;
+        const images = JSON.parse(gallery.dataset.images || "[]");
+        const index = parseInt(thumb.dataset.index, 10) || 0;
+        const propName = gallery.dataset.property || "";
+        openLightbox(images, index, propName);
+      });
+    });
     row.appendChild(b);
     badgeShown = true;
   }
 
   // Quick reply chips only on the very last restored bot message
   if (isLast) {
-    const chipsHtml = buildQuickReplies(text, agent);
+    const chipsHtml = buildQuickReplies(text, agent, serverParts || []);
     if (chipsHtml) {
       const qrDiv = document.createElement("div");
       qrDiv.className = "quick-replies";

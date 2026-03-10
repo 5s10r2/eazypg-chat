@@ -23,17 +23,28 @@ export function buildCompareCardHtml(lines) {
   // renderCell: parse inline markdown (bold, italic) in header/cell text
   const renderCell = text => safeParseInline(text);
 
-  const colHeaders = headerRow.map(h =>
-    `<th>${renderCell(h)}</th>`
+  // Find winner column index for highlight
+  const winnerName = (winnerRow ? winnerRow.join(' ') : '').replace(/🏆|best pick:|pick:/gi, '').trim();
+  const winnerColIdx = winnerName
+    ? headerRow.findIndex(h => h.toLowerCase().includes(winnerName.toLowerCase().split(' ')[0]))
+    : -1;
+
+  const colHeaders = headerRow.map((h, i) =>
+    `<th${i === winnerColIdx ? ' class="cmp-winner-col"' : ''}>${renderCell(h)}</th>`
   ).join('');
 
+  // Pad rows to consistent column count
+  const maxCols = Math.max(headerRow.length, ...bodyRows.map(r => r.length));
+
   const bodyHtml = bodyRows.map(row => {
-    const cells = row.map(c => {
+    const paddedRow = [...row];
+    while (paddedRow.length < maxCols) paddedRow.push('');
+    const cells = paddedRow.map((c, ci) => {
       const lc = c.toLowerCase();
-      let cls = '';
-      if (['✓','yes','✅','✔'].includes(lc)) { cls = 'cmp-yes'; c = '✓'; }
-      if (['—','-','no','❌','✗'].includes(lc)) { cls = 'cmp-no'; c = '—'; }
-      return `<td class="${cls}">${cls ? escapeHtml(c) : renderCell(c)}</td>`;
+      let cls = ci === winnerColIdx ? 'cmp-winner-col' : '';
+      if (['✓','yes','✅','✔'].includes(lc)) { cls += (cls ? ' ' : '') + 'cmp-yes'; c = '✓'; }
+      if (['—','-','no','❌','✗'].includes(lc)) { cls += (cls ? ' ' : '') + 'cmp-no'; c = '—'; }
+      return `<td class="${cls.trim()}">${cls.includes('cmp-yes') || cls.includes('cmp-no') ? escapeHtml(c) : renderCell(c)}</td>`;
     }).join('');
     return `<tr>${cells}</tr>`;
   }).join('');
@@ -44,10 +55,12 @@ export function buildCompareCardHtml(lines) {
 
   return `<div class="compare-card">
     <div class="compare-card-header">${t("comparison_header")}</div>
-    <table class="compare-tbl">
-      <thead><tr>${colHeaders}</tr></thead>
-      <tbody>${bodyHtml}</tbody>
-    </table>
+    <div class="compare-tbl-wrap">
+      <table class="compare-tbl">
+        <thead><tr>${colHeaders}</tr></thead>
+        <tbody>${bodyHtml}</tbody>
+      </table>
+    </div>
     ${winnerHtml}
   </div>`;
 }

@@ -25,7 +25,7 @@
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .header-status {
-  font-size: 11px; color: rgba(255,255,255,0.42); margin-top: 1px;
+  font-size: 11px; color: rgba(255,255,255,0.70); margin-top: 1px;
   display: flex; align-items: center; gap: 6px;
 }
 .header-status::before {
@@ -38,7 +38,7 @@
 .header-badge {
   border: 1px solid rgba(255,255,255,0.15);
   background: transparent;
-  color: rgba(255,255,255,0.50);
+  color: rgba(255,255,255,0.75);
   padding: 4px 10px;
   border-radius: 20px;
   font-size: 10px;
@@ -61,12 +61,12 @@
   border-color: rgba(255,255,255,0.30);
 }
 .header-new-chat:active { transform: scale(0.94); }
-.header-new-chat svg { width: 16px; height: 16px; fill: none; stroke: rgba(255,255,255,0.60); stroke-width: 2; stroke-linecap: round; }
+.header-new-chat svg { width: 16px; height: 16px; fill: none; stroke: rgba(255,255,255,0.75); stroke-width: 2; stroke-linecap: round; }
 
 /* ─── Language Selector ─── */
 .lang-select {
   background: transparent;
-  color: rgba(255,255,255,0.55);
+  color: rgba(255,255,255,0.80);
   border: 1px solid rgba(255,255,255,0.15);
   border-radius: 6px;
   padding: 4px 6px;

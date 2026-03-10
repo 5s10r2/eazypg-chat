@@ -36,7 +36,7 @@
   </div>
 
   <!-- Chat Area -->
-  <div class="chat-area" id="chatArea">
+  <div class="chat-area" id="chatArea" aria-live="polite" aria-label="Chat messages">
     <div class="welcome-card" id="welcomeCard">
       <div class="welcome-title">Find your perfect PG</div>
       <div class="welcome-subtitle">Your AI broker in Mumbai. Search, compare, and book — all in chat.</div>
@@ -64,6 +64,7 @@
   <!-- Input Area -->
   <div class="input-area">
     <div class="input-wrapper">
+      <label for="msgInput" class="sr-only">Message OxOtel</label>
       <textarea id="msgInput" rows="1" placeholder="Message OxOtel…"
         onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage()}"
         oninput="autoGrow(this)"></textarea>

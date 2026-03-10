@@ -243,3 +243,15 @@
   .ig-title { font-size: 13px; }
   .ig-more-count { font-size: 16px; }
 }
+
+/* ── Broken image fallback ── */
+.ig-thumb-broken { background: #f1f5f9; }
+.ig-thumb-broken img { display: none; }
+.ig-thumb-broken::after {
+  content: '🏠';
+  font-size: 24px;
+  display: flex; align-items: center; justify-content: center;
+  position: absolute; inset: 0;
+  opacity: 0.5;
+  pointer-events: none;
+}

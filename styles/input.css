@@ -56,6 +56,13 @@
 .mic-btn:disabled { color: #cbd5e1; border-color: #e2e8f0; cursor: not-allowed; transform: none; }
 .mic-btn svg { width: 18px; height: 18px; }
 
+/* ─── Focus-visible rings ─── */
+.send-btn:focus-visible,
+.mic-btn:focus-visible {
+  outline: 2px solid #6366f1;
+  outline-offset: 2px;
+}
+
 /* Recording state — red with pulse */
 .mic-btn.recording {
   background: #fee2e2; border-color: #ef4444; color: #ef4444;

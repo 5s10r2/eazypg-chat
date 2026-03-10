@@ -58,14 +58,26 @@ export async function sendMessage() {
 
     if (res.status === 429) {
       const errData = await res.json().catch(() => ({}));
-      const wait = errData.retry_after || 10;
+      let wait = errData.retry_after || 10;
       row.remove();
       document.getElementById("coldBanner").classList.remove("show");
       addBotMessage(t("rate_limit", { seconds: wait }), "system");
-      setIsWaiting(false);
-      sendBtn.disabled = false;
-      if (micBtn) micBtn.disabled = false;
-      return;
+
+      // Countdown in input placeholder
+      const originalPlaceholder = msgInput.placeholder;
+      const countdown = setInterval(() => {
+        wait--;
+        if (wait <= 0) {
+          clearInterval(countdown);
+          msgInput.placeholder = originalPlaceholder;
+          setIsWaiting(false);
+          sendBtn.disabled = false;
+          if (micBtn) micBtn.disabled = false;
+        } else {
+          msgInput.placeholder = `Try again in ${wait}s…`;
+        }
+      }, 1000);
+      return;  // skip finally block's re-enable — countdown handles it
     }
     if (!res.ok) throw new Error(`Server error: ${res.status}`);
 
@@ -149,6 +161,11 @@ export async function sendMessage() {
             agentName = parsed.agent || agentName;
             fullText = parsed.full_response || fullText;
             serverParts = parsed.parts || null;
+            // Clear skeleton immediately so content doesn't snap in
+            if (!fullText) {
+              contentEl.innerHTML = '';
+              statusEl.style.display = 'none';
+            }
             break;
           case "error":
             fullText = fullText || parsed.text || "Something went wrong.";

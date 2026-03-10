@@ -33,12 +33,13 @@ function renderPropertyCarousel(part) {
   if (!props.length) return null;
 
   const isSingle = props.length === 1;
-  const cardsHtml = props.map(p => buildPropertyCardHtml(p, isSingle)).join('');
+  const context = part.context || 'search'; // 'search' | 'shortlist' | 'detail'
+  const cardsHtml = props.map(p => buildPropertyCardHtml(p, isSingle, context)).join('');
   const cid = nextCarouselSeq();
 
   let carouselHtml;
   if (isSingle) {
-    carouselHtml = `<div style="margin:8px 0 4px">${cardsHtml}</div>`;
+    carouselHtml = `<div class="single-card-wrap">${cardsHtml}</div>`;
   } else {
     carouselHtml = `
       <div class="carousel-wrapper">
@@ -68,14 +69,31 @@ function renderComparisonTable(part) {
   if (headers.length < 2 || rows.length < 1) return null;
 
   const renderCell = text => safeParseInline(text);
-  const colHeaders = headers.map(h => `<th>${renderCell(h)}</th>`).join('');
+
+  // Find which column is the winner for highlighting
+  const winnerName = (part.winner || '').toLowerCase();
+  const winnerColIdx = winnerName
+    ? headers.findIndex(h => (h || '').toLowerCase().includes(winnerName))
+    : -1;
+
+  const colHeaders = headers.map((h, i) => {
+    const cls = i === winnerColIdx ? ' class="cmp-winner-col"' : '';
+    return `<th${cls}>${renderCell(h)}</th>`;
+  }).join('');
+
+  // Pad rows to consistent column count to prevent layout breaks
+  const maxCols = Math.max(headers.length, ...rows.map(r => (r || []).length));
+
   const bodyHtml = rows.map(row => {
-    const cells = row.map(c => {
-      const lc = (c || "").toLowerCase();
-      let cls = '';
-      if (['✓','yes','✅','✔'].includes(lc)) { cls = 'cmp-yes'; c = '✓'; }
-      if (['—','-','no','❌','✗'].includes(lc)) { cls = 'cmp-no'; c = '—'; }
-      return `<td class="${cls}">${cls ? escapeHtml(c) : renderCell(c)}</td>`;
+    const padded = [...(row || [])];
+    while (padded.length < maxCols) padded.push('');
+    const cells = padded.map((c, ci) => {
+      const lc = (c || '').toLowerCase();
+      let cls = ci === winnerColIdx ? 'cmp-winner-col' : '';
+      if (['✓', 'yes', '✅', '✔'].includes(lc))  { cls += (cls ? ' ' : '') + 'cmp-yes'; c = '✓'; }
+      if (['—', '-', 'no', '❌', '✗'].includes(lc)) { cls += (cls ? ' ' : '') + 'cmp-no'; c = '—'; }
+      const isBool = cls.includes('cmp-yes') || cls.includes('cmp-no');
+      return `<td class="${cls.trim()}">${isBool ? escapeHtml(c) : renderCell(c)}</td>`;
     }).join('');
     return `<tr>${cells}</tr>`;
   }).join('');
@@ -85,11 +103,13 @@ function renderComparisonTable(part) {
     : '';
 
   return { html: `<div class="compare-card">
-    <div class="compare-card-header">${t("comparison_header")}</div>
-    <table class="compare-tbl">
-      <thead><tr>${colHeaders}</tr></thead>
-      <tbody>${bodyHtml}</tbody>
-    </table>
+    <div class="compare-card-header">${t('comparison_header')}</div>
+    <div class="compare-tbl-wrap">
+      <table class="compare-tbl">
+        <thead><tr>${colHeaders}</tr></thead>
+        <tbody>${bodyHtml}</tbody>
+      </table>
+    </div>
     ${winnerHtml}
   </div>` };
 }
@@ -135,7 +155,7 @@ const STATUS_ICONS = {
 };
 
 function _icon(name) {
-  return STATUS_ICONS[name] || '';
+  return STATUS_ICONS[name] || STATUS_ICONS['calendar'];
 }
 
 // ── Status Card ────────────────────────────────────────────────────────
@@ -189,7 +209,8 @@ function renderStatusCard(part) {
   } else if (celebration === 'heart') {
     cardHtml = `<div class="celebration-wrap">${cardHtml}<div class="heart-celebration">❤️</div></div>`;
   } else if (celebration === 'checkmark') {
-    cardHtml = `<div class="celebration-wrap">${cardHtml}<div class="checkmark-celebration"><svg viewBox="0 0 52 52"><circle cx="26" cy="26" r="25" fill="none" stroke="currentColor" stroke-width="2"/><path fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" d="M14.1 27.2l7.1 7.2 16.7-16.8"/></svg></div></div>`;
+    // Use CSS classes so animations.css stroke-dasharray animations apply
+    cardHtml = `<div class="celebration-wrap">${cardHtml}<div class="checkmark-celebration"><svg viewBox="0 0 52 52"><circle class="checkmark-circle" cx="26" cy="26" r="25"/><path class="checkmark-check" d="M14.1 27.2l7.1 7.2 16.7-16.8"/></svg></div></div>`;
   }
 
   return { html: cardHtml };
@@ -198,23 +219,24 @@ function renderStatusCard(part) {
 // ── Image Gallery ──────────────────────────────────────────────────────
 
 function renderImageGallery(part) {
-  const images = part.images || [];
+  const images = (part.images || []).filter(img => img && img.url);
   if (!images.length) return null;
   const propName = escapeHtml(part.property_name || 'Property');
 
   const thumbsHtml = images.map((img, i) => {
     const url = escapeHtml(img.url || '');
     const caption = escapeHtml(img.caption || '');
+    const onerror = `onerror="this.closest('.ig-thumb').classList.add('ig-thumb-broken')"`;
     const isMore = i === 3 && images.length > 4;
     if (isMore) {
       return `<div class="ig-thumb ig-thumb-more" data-index="${i}" data-gallery="${propName}">
-        <img src="${url}" alt="${caption || propName}" loading="lazy" />
+        <img src="${url}" alt="${caption || propName}" loading="lazy" ${onerror} />
         <span class="ig-more-count">+${images.length - 4}</span>
       </div>`;
     }
     if (i > 3) return '';  // Hidden, accessible via lightbox
     return `<div class="ig-thumb" data-index="${i}" data-gallery="${propName}">
-      <img src="${url}" alt="${caption || propName}" loading="lazy" />
+      <img src="${url}" alt="${caption || propName}" loading="lazy" ${onerror} />
     </div>`;
   }).join('');
 
@@ -236,8 +258,15 @@ function renderConfirmationCard(part) {
   const title = escapeHtml(part.title || '');
   const subtitle = escapeHtml(part.subtitle || '');
   const style = part.style || 'visit'; // visit | payment
+
+  // Separate action (sent to AI) from label (shown on button)
   const confirmAction = escapeHtml(part.confirm_action || 'Confirm');
-  const cancelAction = escapeHtml(part.cancel_action || 'Cancel');
+  const confirmLabel  = escapeHtml(part.confirm_label  || 'Yes, confirm');
+  const cancelAction  = escapeHtml(part.cancel_action  || 'Cancel');
+  const cancelLabel   = escapeHtml(part.cancel_label   || 'Cancel');
+
+  // Badge clearly indicates context — never falls back to t() string parsing
+  const badgeLabel = style === 'payment' ? '💳 Payment' : '📅 Visit Details';
 
   const detailsHtml = (part.details || [])
     .filter(d => d.text)
@@ -249,15 +278,15 @@ function renderConfirmationCard(part) {
     .join('');
 
   return { html: `<div class="confirmation-card cc-${style}">
-    <div class="cc-badge">${style === 'payment' ? '💳' : '📅'} ${t("comparison_header").includes("Compar") ? 'Confirm' : title}</div>
+    <div class="cc-badge">${badgeLabel}</div>
     <div class="cc-header">
       <div class="cc-title">${title}</div>
       ${subtitle ? `<div class="cc-subtitle">${subtitle}</div>` : ''}
     </div>
     ${detailsHtml ? `<div class="cc-details">${detailsHtml}</div>` : ''}
     <div class="cc-actions">
-      <button class="cc-action cc-confirm" data-action="${confirmAction}">✓ ${confirmAction}</button>
-      <button class="cc-action cc-cancel" data-action="${cancelAction}">${cancelAction}</button>
+      <button class="cc-action cc-confirm" data-action="${confirmAction}">✓ ${confirmLabel}</button>
+      <button class="cc-action cc-cancel"  data-action="${cancelAction}">${cancelLabel}</button>
     </div>
   </div>` };
 }
@@ -330,7 +359,7 @@ function renderExpandableSections(part) {
       <summary class="exp-header">
         <span class="exp-icon">${icon}</span>
         <span class="exp-title">${title}</span>
-        <span class="exp-count">${contentType === 'pills' ? items.length : ''}</span>
+        <span class="exp-count">${items.length > 0 ? items.length : ''}</span>
         <span class="exp-chevron">&#9658;</span>
       </summary>
       <div class="exp-body">${bodyHtml}</div>

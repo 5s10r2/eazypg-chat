@@ -243,9 +243,83 @@
 }
 .carousel-view-all:hover { color: #005bcc; text-decoration: underline; }
 
+/* ─── Single card wrapper (replaces inline style) ─── */
+.single-card-wrap { margin: 8px 0 4px; }
+
+/* ─── Taller image for detail/single views ─── */
+.property-card-img-wrap.img-tall,
+.property-card-img-wrap.img-tall .property-card-image,
+.property-card-img-wrap.img-tall .property-card-image-placeholder {
+  height: 180px;
+}
+
+/* ─── Improved image crop — favour upper portion for PG/apartment photos ─── */
+.property-card-image { object-position: center 30%; }
+
+/* ─── Score badge: low match variant ─── */
+.pc-score-low {
+  background: rgba(148, 163, 184, 0.88);
+  color: #fff;
+}
+
+/* ─── Saved badge (shortlist context) ─── */
+.pc-saved-badge {
+  position: absolute;
+  bottom: 10px; left: 10px;
+  background: rgba(22, 163, 74, 0.92);
+  color: #fff;
+  font-size: 10px; font-weight: 600;
+  padding: 3px 8px; border-radius: 6px;
+  letter-spacing: 0.03em;
+  z-index: 1;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+/* ─── Danger-ghost button (Remove from shortlist) ─── */
+.pc-btn.danger-ghost {
+  background: #fff;
+  color: #ef4444;
+  border: 1px solid #fecaca;
+}
+.pc-btn.danger-ghost:hover {
+  background: #fef2f2;
+  border-color: #ef4444;
+}
+
+/* ─── Amenity overflow count pill ─── */
+.pc-amenity-more {
+  color: var(--text-lighter);
+  background: transparent;
+  border: 1px dashed var(--border);
+}
+
+/* ─── Focus-visible rings ─── */
+.pc-btn:focus-visible {
+  outline: 2px solid #6366f1;
+  outline-offset: 2px;
+}
+
+/* ─── Card body: targeted spacing instead of flat gap ─── */
+.property-card-body {
+  padding: 12px 14px 12px;
+  display: flex; flex-direction: column;
+  gap: 0; flex: 1;
+}
+.property-card-name    { margin-bottom: 2px; }
+.property-card-location { margin-bottom: 6px; }
+.pc-amenities          { margin: 0 0 8px; }
+.property-card-rent    { margin-bottom: 4px; }
+.property-card-meta    { margin-bottom: 10px; }
+.property-card-actions { margin-top: auto; }
+
 /* ─── Responsive ─── */
 @media (max-width: 360px) {
   .property-card { min-width: 240px; max-width: 240px; }
-  .property-card-img-wrap, .property-card-image,
+  .property-card-img-wrap,
+  .property-card-image,
   .property-card-image-placeholder { height: 130px; }
+  .property-card-img-wrap.img-tall,
+  .property-card-img-wrap.img-tall .property-card-image,
+  .property-card-img-wrap.img-tall .property-card-image-placeholder { height: 155px; }
 }

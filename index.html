@@ -77,6 +77,12 @@
         <line x1="8" y1="23" x2="16" y2="23"/>
       </svg>
     </button>
+    <!-- Stop button: visible only while AI is streaming (controlled by stream.js) -->
+    <button type="button" class="stop-btn" id="stopBtn" onclick="stopStream()" title="Stop response" style="display:none">
+      <svg viewBox="0 0 24 24" fill="currentColor">
+        <rect x="6" y="6" width="12" height="12" rx="2"/>
+      </svg>
+    </button>
     <button class="send-btn" id="sendBtn" onclick="sendMessage()">
       <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
     </button>

@@ -319,3 +319,24 @@ details.exp-section[open] .exp-chevron {
   .exp-chevron { transition: none; }
   @keyframes expReveal { from { opacity: 1; transform: none; } }
 }
+
+/* ─── Interrupted / Redirected message styles ─── */
+/* Applied to a bot row when the user sent a new message mid-stream */
+.msg-row.bot.msg-interrupted .bubble {
+  opacity: 0.75;
+  border-left: 2px solid #f59e0b; /* amber left-border — subtle "incomplete" signal */
+  padding-left: 10px;
+}
+.redirected-badge {
+  display: block;
+  margin-top: 6px;
+  font-size: 11px;
+  color: #92400e;
+  background: #fef3c7;
+  border: 1px solid #fde68a;
+  border-radius: 6px;
+  padding: 2px 8px;
+  width: fit-content;
+  font-style: italic;
+  opacity: 0.85;
+}

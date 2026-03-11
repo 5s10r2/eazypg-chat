@@ -20,7 +20,7 @@ import { marked } from 'marked';
 import { TRANSLATIONS, currentLocale, setCurrentLocale, setLocale, updateUIStrings } from './i18n.js';
 import { autoGrow } from './helpers.js';
 import { loadChatHistory, clearChat } from './chat-history.js';
-import { sendMessage, sendQuick } from './stream.js';
+import { sendMessage, sendQuick, stopStream } from './stream.js';
 import { initVoiceInput, toggleVoiceInput } from './voice-input.js';
 import { setAccountValues } from './config.js';
 
@@ -28,11 +28,12 @@ import { setAccountValues } from './config.js';
 marked.setOptions({ breaks: true, gfm: true, headerIds: false, mangle: false });
 
 // ─── Expose functions for HTML onclick handlers ───
-window.sendMessage = sendMessage;
-window.sendQuick   = sendQuick;
-window.clearChat   = clearChat;
-window.setLocale   = setLocale;
-window.autoGrow    = autoGrow;
+window.sendMessage  = sendMessage;
+window.sendQuick    = sendQuick;
+window.stopStream   = stopStream;
+window.clearChat    = clearChat;
+window.setLocale    = setLocale;
+window.autoGrow     = autoGrow;
 window.toggleVoiceInput = toggleVoiceInput;
 
 // ─── Carousel scroll counter sync ───

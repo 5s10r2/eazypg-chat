@@ -32,7 +32,7 @@ function setPlaceholder(text) {
 
 function restorePlaceholder() {
   const el = getInput();
-  if (el) el.placeholder = savedPlaceholder || 'Message OxOtel…';
+  if (el) el.placeholder = savedPlaceholder || 'Message Tarini…';
 }
 
 // ─── Clean up everything ───

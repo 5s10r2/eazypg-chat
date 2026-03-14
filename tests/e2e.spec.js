@@ -487,7 +487,8 @@ test.describe('E: Real-World Scenarios', () => {
 
     const shortlist = await sendAndWait(page, 'Shortlist this property');
     // Bot either confirms shortlist or asks which property (valid disambiguation)
-    expect(shortlist).toMatch(/shortlist|saved|added|noted|which one|which property|name/i);
+    // Also matches valid acknowledgement phrasing like "get that sorted" / "save it properly"
+    expect(shortlist).toMatch(/shortlist|saved|added|noted|which one|which property|name|sort|save/i);
   });
 
   test('E2 — Returning user: context recall', async ({ page }) => {

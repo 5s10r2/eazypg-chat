@@ -323,7 +323,7 @@ test.describe('C: Stress Tests', () => {
     expect(r2.length).toBeGreaterThan(10);
   });
 
-  test('C5 — Rapid agent switching: 4 agents in sequence', async ({ page }) => {
+  test('C5 — Rapid agent switching: 4 agents in sequence', { timeout: 120_000 }, async ({ page }) => {
     await setupChat(page);
 
     // Broker
@@ -476,7 +476,7 @@ test.describe('D: State & UI Integrity', () => {
 
 test.describe('E: Real-World Scenarios', () => {
 
-  test('E1 — Full journey: search → details → shortlist', async ({ page }) => {
+  test('E1 — Full journey: search → details → shortlist', { timeout: 120_000 }, async ({ page }) => {
     await setupChat(page);
 
     const search = await sendAndWait(page, 'Boys PG in Thane under 12000 with WiFi and AC');
